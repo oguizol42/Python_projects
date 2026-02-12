@@ -17,3 +17,17 @@
 # Height validation test: True
 # Garden scores - Alice: 218, Bob: 92
 # Total gardens managed: 2
+
+# class GardenManager
+#   => Gere plusieurs jardins
+#   => @classmethode create_garden_network()
+#   => methode GardenStats()
+#         => calcul statistiques
+# class Plant
+#		=> attributs: nom et taille en cm
+# class FloweringPlant
+#		=> herite de class Plant
+#		=> attribut: floraison(blooming)    -     exemple: red flowers(blooming)
+# class PrizeFlower
+#		=> herite de class FloweringPlant (et donc de class Plant)
+#		=> attribut: prize points
