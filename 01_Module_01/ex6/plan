@@ -21,7 +21,7 @@
 # class GardenManager
 #   => Gere plusieurs jardins
 #   => @classmethode create_garden_network()
-#   => methode GardenStats()
+#   => methode(imbiruquee) GardenStats()
 #         => calcul statistiques
 # class Plant
 #		=> attributs: nom et taille en cm
