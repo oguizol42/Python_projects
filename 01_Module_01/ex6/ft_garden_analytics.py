@@ -1,6 +1,3 @@
-# from xmlrpc.client import Boolean
-
-
 class GardenManager:
     """Manage Some Gardens"""
 
@@ -15,6 +12,7 @@ class GardenManager:
             self.flow_plant_list = []
             self.prize_plant_list = []
             self.growth: int = 0
+            self.score: int = 0
 
     class Plant:
         """Plant Definition"""
@@ -39,7 +37,6 @@ class GardenManager:
 
     class GardenStats:
         """Statistics Calculator"""
-
         def qty_plants(
             garden: "GardenManager.Garden",
         ) -> tuple[(int, int, int, int)]:
@@ -61,13 +58,24 @@ class GardenManager:
             return growth
 
         plant_growth_total = staticmethod(plant_growth_total)
-        # score total du jardin
 
-        # comparaison entre jardin
-        # calcul score global
+        def gardens_scores(gardens: list) -> None:
+            """Calculate Scores Gardens"""
+            for j in range(len(gardens)):
+                bonus = 0
+                score = 0
+                for i in range(len(gardens[j].reg_plant_list)):
+                    score += gardens[j].reg_plant_list[i].height
+                for i in range(len(gardens[j].flow_plant_list)):
+                    score += gardens[j].flow_plant_list[i].height
+                for i in range(len(gardens[j].prize_plant_list)):
+                    score += gardens[j].prize_plant_list[i].height
+                for i in range(len(gardens[j].prize_plant_list)):
+                    bonus += gardens[j].prize_plant_list[i].points
+                score += bonus * gardens[j].growth
+                gardens[j].score = score
 
-    def __init__(self):
-        pass  # TEMPO
+        gardens_scores = staticmethod(gardens_scores)
 
     def create_garden_network(cls, name, plants=None) -> None:
         """Add Garden and Plants"""
@@ -75,7 +83,6 @@ class GardenManager:
         if new_garden is None:
             new_garden = cls.Garden(name)
             cls.list_garden.append(new_garden)
-            print(f"{name} has just added in garden's list")  # TEMPO
         if plants is not None:
             GardenManager.add_plant(new_garden, plants)
 
@@ -142,7 +149,13 @@ class GardenManager:
             f" {qty_priz} prize flowers"
         )
         print("Height validation test: True")
-        print("Garden scores")  # A COMPLETER
+        GardenManager.GardenStats.gardens_scores(GardenManager.list_garden)
+        print(f"Garden scores - {GardenManager.list_garden[0].name}: "
+            f"{GardenManager.list_garden[0].score}", end ="")
+        for i in range(1, len(GardenManager.list_garden)):
+            print(f", {GardenManager.list_garden[i].name}: "
+                f"{GardenManager.list_garden[i].score}", end ="")
+        print()
         print(f"Total gardens managed: {len(GardenManager.list_garden)}")
 
     garden_report = staticmethod(garden_report)
@@ -153,17 +166,6 @@ class GardenManager:
         garden.growth = GardenManager.GardenStats.plant_growth_total(garden)
 
     increase_watering_garden = staticmethod(increase_watering_garden)
-
-    # === Alice's Garden Report ===
-    # Plants in garden:
-    # - Oak Tree: 101cm
-    # - Rose: 26cm, red flowers (blooming)
-    # - Sunflower: 51cm, yellow flowers (blooming), Prize points: 10
-    # Plants added: 3, Total growth: 3cm
-    # Plant types: 1 regular, 1 flowering, 1 prize flowers
-    # Height validation test: True
-    # Garden scores - Alice: 218, Bob: 92
-    # Total gardens managed: 2
 
     def obj_to_list(obj) -> list:
         """Return a List from an Object"""
@@ -197,7 +199,7 @@ def main() -> None:
 
     rose1 = GardenManager.FloweringPlant("Rose1", 26, "red flowers")
     # rose2 = GardenManager.FloweringPlant("Rose2", 32, "white flowers")
-    # rose2 = GardenManager.FloweringPlant("Rose3", 18, "green flowers")
+    rose3 = GardenManager.FloweringPlant("Rose3", 92, "green flowers")
 
     sunflower1 = GardenManager.PrizeFlower(
         "Sunflower1", 51, "yellow flowers", 10
@@ -219,12 +221,13 @@ def main() -> None:
     # GardenManager.create_garden_network("toto et mimi")
     GardenManager.create_garden_network("Alice")
     GardenManager.create_garden_network("Alice", oak1)
-    GardenManager.create_garden_network("Bob")
+    GardenManager.create_garden_network("Bob", rose3)
     GardenManager.create_garden_network("Alice")
     GardenManager.create_garden_network("Alice", rose1)
     GardenManager.create_garden_network("Alice", sunflower1)
     GardenManager.increase_watering_garden(GardenManager.list_garden[0])
-    GardenManager.create_garden_network("Alice", oak2)
+    GardenManager.increase_watering_garden(GardenManager.list_garden[1])
+    # GardenManager.create_garden_network("Alice", oak2)
 
     print()
     for i in range(len(GardenManager.list_garden)):
@@ -234,24 +237,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# Example:
-# $> python3 ft_garden_analytics.py
-# === Garden Management System Demo ===
-# Added Oak Tree to Alice's garden
-# Added Rose to Alice's garden
-# Added Sunflower to Alice's garden
-# Alice is helping all plants grow...
-# Oak Tree grew 1cm
-# Rose grew 1cm
-# Sunflower grew 1cm
-# === Alice's Garden Report ===
-# Plants in garden:
-# - Oak Tree: 101cm
-# - Rose: 26cm, red flowers (blooming)
-# - Sunflower: 51cm, yellow flowers (blooming), Prize points: 10
-# Plants added: 3, Total growth: 3cm
-# Plant types: 1 regular, 1 flowering, 1 prize flowers
-# Height validation test: True
-# Garden scores - Alice: 218, Bob: 92
-# Total gardens managed: 2
