@@ -1,195 +1,240 @@
-from xmlrpc.client import Boolean
+# from xmlrpc.client import Boolean
 
 
-class GardenManager():
-	""" Manage Some Gardens """
-	list_garden = []
+class GardenManager:
+    """Manage Some Gardens"""
 
-	class Garden():
-		""" Garden Definition """
-		def __init__(self, name):
-			self.name = name
-			self.reg_plant_list = []
-			self.flow_plant_list = []
-			self.prize_plant_list = []		
+    list_garden = []
 
-	class Plant():
-		""" Plant Definition """
-		def __init__(self, name, height):
-			self.name = str(name)
-			self.height = int(height)
+    class Garden:
+        """Garden Definition"""
 
-	class FloweringPlant(Plant):
-		""" FloweringPlant Definition """
-		def __init__(self, name, height, bloom):
-			super().__init__(name, height)
-			self.bloom = str(bloom)
+        def __init__(self, name: str):
+            self.name = name
+            self.reg_plant_list = []
+            self.flow_plant_list = []
+            self.prize_plant_list = []
+            self.growth: int = 0
 
-	class PrizeFlower(FloweringPlant):
-		""" PrizeFlower Definition """
-		def __init__(self, name, height, bloom, points):
-			super().__init__(name, height, bloom)
-			self.points = int(points)
+    class Plant:
+        """Plant Definition"""
 
-	def __init__(self):
-		pass	# TEMPO
+        def __init__(self, name: str, height):
+            self.name = str(name)
+            self.height = int(height)
 
-	def create_garden_network(cls, name, plants = None) -> None:
-		""" Add Garden and Plants"""
-		new_garden = cls.find_garden(cls.list_garden, name)
-		if new_garden == None:
-			new_garden = cls.Garden(name)
-			cls.list_garden.append(new_garden)
-			print(f"{name} has just added in garden's list") # TEMPO
-		if plants != None:
-			GardenManager.add_plant(new_garden, plants)
+    class FloweringPlant(Plant):
+        """FloweringPlant Definition"""
 
-	create_garden_network = classmethod(create_garden_network)
+        def __init__(self, name: str, height: int, bloom: str):
+            super().__init__(name, height)
+            self.bloom = str(bloom)
 
-	def find_garden(list_garden, name_newG) -> Garden:
-		""" Find Garden in List """
-		if len(list_garden) > 0:
-			for i in range(len(list_garden)):
-				if list_garden[i].name == name_newG:
-					return list_garden[i]
-		return None
+    class PrizeFlower(FloweringPlant):
+        """PrizeFlower Definition"""
 
-	def add_plant(garden: Garden, plants) -> None:
-		""" Put Plants in a Garden """
-		plants = GardenManager.obj_to_list(plants)
-		for i in range(len(plants)):
-			if type(plants[i]) == GardenManager.Plant:
-				garden.reg_plant_list.append(plants[i])
-			if type(plants[i]) == GardenManager.FloweringPlant:
-				garden.flow_plant_list.append(plants[i])
-			if type(plants[i]) == GardenManager.PrizeFlower:
-				garden.prize_plant_list.append(plants[i])
-			print(f"Added {plants[i].name} to {garden.name}'s garden")
+        def __init__(self, name: str, height: int, bloom: str, points: int):
+            super().__init__(name, height, bloom)
+            self.points = int(points)
 
-	def disp_plants_list(garden: Garden):
-		""" Print List of Plants """
-		for i in range(len(garden.reg_plant_list)):
-			print(
-				f"- {garden.reg_plant_list[i].name}: "
-				f"{garden.reg_plant_list[i].height}cm"
-			)
-		for j in range(len(garden.flow_plant_list)):
-			print(
-				f"- {garden.flow_plant_list[j].name}: "
-				f"{garden.flow_plant_list[j].height}cm"
-				f", {garden.flow_plant_list[j].bloom} (blooming)"
-			)
-		for k in range(len(garden.prize_plant_list)):
-			print(
-				f"- {garden.prize_plant_list[k].name}: "
-				f"{garden.prize_plant_list[k].height}cm"
-				f", {garden.prize_plant_list[k].bloom} (blooming)"
-				f", Prize points: {garden.prize_plant_list[k].points}"
-			)
+    class GardenStats:
+        """Statistics Calculator"""
 
-	disp_plants_list = staticmethod(disp_plants_list)
-	
-	def garden_report(garden: Garden) -> None:
-		""" Print Garden Caraceteristics """
-		print(f"=== {garden.name}'s Garden Report ===")
-		
-		qty_reg, qty_flow, qty_priz, total = \
-			GardenManager.sum_three_size_list(
-				garden.reg_plant_list, 
-				garden.flow_plant_list, 
-				garden.prize_plant_list
-			)
-		if total > 0:
-			print("Plants in garden: ")
-			GardenManager.disp_plants_list(garden)
-		else:
-			print("Plants in garden: None")
-		print(f"Plants added: {total}, Total growth: ?cm") # COMPLETER TAILLE EN cm
-		print(
-			f"Plant types: {qty_reg} regular,"
-			f" {qty_flow} flowering,"
-			f" {qty_priz} prize flowers"
-		)
-		print("Height validation test: True")
-		print("Garden scores") # A COMPLETER
-		print(f"Total gardens managed: {len(GardenManager.list_garden)}")
+        def qty_plants(
+            garden: "GardenManager.Garden",
+        ) -> tuple[(int, int, int, int)]:
+            """Plants Counter"""
+            qty_reg, qty_flow, qty_priz, total = (
+                GardenManager.sum_three_size_list(
+                    garden.reg_plant_list,
+                    garden.flow_plant_list,
+                    garden.prize_plant_list,
+                )
+            )
+            return (qty_reg, qty_flow, qty_priz, total)
 
-	garden_report = staticmethod(garden_report)
-	
-# === Alice's Garden Report ===
-# Plants in garden:
-# - Oak Tree: 101cm
-# - Rose: 26cm, red flowers (blooming)
-# - Sunflower: 51cm, yellow flowers (blooming), Prize points: 10
-# Plants added: 3, Total growth: 3cm
-# Plant types: 1 regular, 1 flowering, 1 prize flowers
-# Height validation test: True
-# Garden scores - Alice: 218, Bob: 92
-# Total gardens managed: 2
+        qty_plants = staticmethod(qty_plants)
 
-	def obj_to_list(obj) -> list:
-		""" Return a List from an Object """
-		new_list = []
-		if isinstance(obj, list):
-			new_list = obj
-		else:
-			new_list.append(obj)
-		return new_list
+        def plant_growth_total(garden: "GardenManager.Garden") -> int:
+            """Plant Growth Total in cm"""
+            _, _, _, growth = GardenManager.GardenStats.qty_plants(garden)
+            return growth
 
-	obj_to_list = staticmethod(obj_to_list)
+        plant_growth_total = staticmethod(plant_growth_total)
+        # score total du jardin
 
-	def sum_three_size_list(obj1: list, obj2: list, obj3: list) -> tuple[(int, int, int, int)]:
-		""" Return size of three list and total"""
-		size1 = len(obj1)
-		size2 = len(obj2)
-		size3 = len(obj3)
-		total = size1 + size2 + size3
-		return size1, size2, size3, total
+        # comparaison entre jardin
+        # calcul score global
 
-	sum_three_size_list = staticmethod(sum_three_size_list)
+    def __init__(self):
+        pass  # TEMPO
 
-	def GardenStats(self) -> None:
-		""" Statistics Calculator """
-		pass	# TEMPO
+    def create_garden_network(cls, name, plants=None) -> None:
+        """Add Garden and Plants"""
+        new_garden = cls.find_garden(cls.list_garden, name)
+        if new_garden is None:
+            new_garden = cls.Garden(name)
+            cls.list_garden.append(new_garden)
+            print(f"{name} has just added in garden's list")  # TEMPO
+        if plants is not None:
+            GardenManager.add_plant(new_garden, plants)
+
+    create_garden_network = classmethod(create_garden_network)
+
+    def find_garden(list_garden, name_newG) -> Garden:
+        """Find Garden in List"""
+        if len(list_garden) > 0:
+            for i in range(len(list_garden)):
+                if list_garden[i].name == name_newG:
+                    return list_garden[i]
+        return None
+
+    def add_plant(garden: Garden, plants) -> None:
+        """Put Plants in a Garden"""
+        plants = GardenManager.obj_to_list(plants)
+        for i in range(len(plants)):
+            if isinstance(plants[i], GardenManager.PrizeFlower):
+                garden.prize_plant_list.append(plants[i])
+            elif isinstance(plants[i], GardenManager.FloweringPlant):
+                garden.flow_plant_list.append(plants[i])
+            elif isinstance(plants[i], GardenManager.Plant):
+                garden.reg_plant_list.append(plants[i])
+            print(f"Added {plants[i].name} to {garden.name}'s garden")
+
+    def disp_plants_list(garden: Garden):
+        """Print List of Plants"""
+        for i in range(len(garden.reg_plant_list)):
+            print(
+                f"- {garden.reg_plant_list[i].name}: "
+                f"{garden.reg_plant_list[i].height}cm"
+            )
+        for j in range(len(garden.flow_plant_list)):
+            print(
+                f"- {garden.flow_plant_list[j].name}: "
+                f"{garden.flow_plant_list[j].height}cm"
+                f", {garden.flow_plant_list[j].bloom} (blooming)"
+            )
+        for k in range(len(garden.prize_plant_list)):
+            print(
+                f"- {garden.prize_plant_list[k].name}: "
+                f"{garden.prize_plant_list[k].height}cm"
+                f", {garden.prize_plant_list[k].bloom} (blooming)"
+                f", Prize points: {garden.prize_plant_list[k].points}"
+            )
+
+    disp_plants_list = staticmethod(disp_plants_list)
+
+    def garden_report(garden: Garden) -> None:
+        """Print Garden Caraceteristics"""
+        print(f"=== {garden.name}'s Garden Report ===")
+        qty_reg, qty_flow, qty_priz, total = (
+            GardenManager.GardenStats.qty_plants(garden)
+        )
+        if total > 0:
+            print("Plants in garden: ")
+            GardenManager.disp_plants_list(garden)
+        else:
+            print("Plants in garden: None")
+        print(f"Plants added: {total}, Total growth: {garden.growth}cm")
+        print(
+            f"Plant types: {qty_reg} regular,"
+            f" {qty_flow} flowering,"
+            f" {qty_priz} prize flowers"
+        )
+        print("Height validation test: True")
+        print("Garden scores")  # A COMPLETER
+        print(f"Total gardens managed: {len(GardenManager.list_garden)}")
+
+    garden_report = staticmethod(garden_report)
+
+    def increase_watering_garden(garden: "GardenManager.Garden"):
+        """Counting Watering Garden"""
+        print(f"{garden.name} is helping all plants grow...")
+        garden.growth = GardenManager.GardenStats.plant_growth_total(garden)
+
+    increase_watering_garden = staticmethod(increase_watering_garden)
+
+    # === Alice's Garden Report ===
+    # Plants in garden:
+    # - Oak Tree: 101cm
+    # - Rose: 26cm, red flowers (blooming)
+    # - Sunflower: 51cm, yellow flowers (blooming), Prize points: 10
+    # Plants added: 3, Total growth: 3cm
+    # Plant types: 1 regular, 1 flowering, 1 prize flowers
+    # Height validation test: True
+    # Garden scores - Alice: 218, Bob: 92
+    # Total gardens managed: 2
+
+    def obj_to_list(obj) -> list:
+        """Return a List from an Object"""
+        new_list = []
+        if isinstance(obj, list):
+            new_list = obj
+        else:
+            new_list.append(obj)
+        return new_list
+
+    obj_to_list = staticmethod(obj_to_list)
+
+    def sum_three_size_list(
+        obj1: list, obj2: list, obj3: list
+    ) -> tuple[(int, int, int, int)]:
+        """Return size of three list and total"""
+        size1 = len(obj1)
+        size2 = len(obj2)
+        size3 = len(obj3)
+        total = size1 + size2 + size3
+        return size1, size2, size3, total
+
+    sum_three_size_list = staticmethod(sum_three_size_list)
+
 
 def main() -> None:
-	""" Test Function """	
-	oak1 = GardenManager.Plant("Oak1 Tree", 101)
-	oak2 = GardenManager.Plant("Oak2 Tree", 153)
-	oak3 = GardenManager.Plant("Oak3 Tree", 208)
+    """Test Function"""
+    oak1 = GardenManager.Plant("Oak1 Tree", 101)
+    oak2 = GardenManager.Plant("Oak2 Tree", 153)
+    # oak3 = GardenManager.Plant("Oak3 Tree", 208)
 
-	rose1 = GardenManager.FloweringPlant("Rose1", 26, "red flowers")
-	rose2 = GardenManager.FloweringPlant("Rose2", 32, "white flowers")
-	rose2 = GardenManager.FloweringPlant("Rose3", 18, "green flowers")
+    rose1 = GardenManager.FloweringPlant("Rose1", 26, "red flowers")
+    # rose2 = GardenManager.FloweringPlant("Rose2", 32, "white flowers")
+    # rose2 = GardenManager.FloweringPlant("Rose3", 18, "green flowers")
 
-	sunflower1 = GardenManager.PrizeFlower("Sunflower1", 51, "yellow flowers", 10)
-	sunflower2 = GardenManager.PrizeFlower("Sunflower1", 63, "blue flowers", 14)
-	sunflower3 = GardenManager.PrizeFlower("Sunflower1", 73, "orange flowers", 22)
+    sunflower1 = GardenManager.PrizeFlower(
+        "Sunflower1", 51, "yellow flowers", 10
+    )
+    # sunflower2 = GardenManager.PrizeFlower(
+    #    "Sunflower1", 63, "blue flowers", 14
+    # )
+    # sunflower3 = GardenManager.PrizeFlower(
+    #    "Sunflower1", 73, "orange flowers", 22
+    # )
 
-	print("=== Garden Management System Demo ===")
-	# GardenManager.create_garden_network("toto")
-	# GardenManager.create_garden_network("mimi")
-	# GardenManager.create_garden_network("tomi")
-	# GardenManager.create_garden_network("mito")
-	# GardenManager.create_garden_network("toto")
-	# GardenManager.create_garden_network("totomimi")
-	# GardenManager.create_garden_network("toto et mimi")
-	GardenManager.create_garden_network("Alice")
-	GardenManager.create_garden_network("Alice", oak1)
-	GardenManager.create_garden_network("Bob")
-	GardenManager.create_garden_network("Alice")
-	GardenManager.create_garden_network("Alice", rose1)
-	GardenManager.create_garden_network("Alice", sunflower1)
-	GardenManager.create_garden_network("Alice", oak2)
+    print("=== Garden Management System Demo ===")
+    # GardenManager.create_garden_network("toto")
+    # GardenManager.create_garden_network("mimi")
+    # GardenManager.create_garden_network("tomi")
+    # GardenManager.create_garden_network("mito")
+    # GardenManager.create_garden_network("toto")
+    # GardenManager.create_garden_network("totomimi")
+    # GardenManager.create_garden_network("toto et mimi")
+    GardenManager.create_garden_network("Alice")
+    GardenManager.create_garden_network("Alice", oak1)
+    GardenManager.create_garden_network("Bob")
+    GardenManager.create_garden_network("Alice")
+    GardenManager.create_garden_network("Alice", rose1)
+    GardenManager.create_garden_network("Alice", sunflower1)
+    GardenManager.increase_watering_garden(GardenManager.list_garden[0])
+    GardenManager.create_garden_network("Alice", oak2)
 
-	print()
-	for i in range(len(GardenManager.list_garden)):
-		GardenManager.garden_report(GardenManager.list_garden[i])
-		print()
+    print()
+    for i in range(len(GardenManager.list_garden)):
+        GardenManager.garden_report(GardenManager.list_garden[i])
+        print()
 
-if __name__ == '__main__':
-	main()
-	
+
+if __name__ == "__main__":
+    main()
+
 # Example:
 # $> python3 ft_garden_analytics.py
 # === Garden Management System Demo ===
