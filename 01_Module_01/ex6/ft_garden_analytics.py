@@ -37,6 +37,7 @@ class GardenManager:
 
     class GardenStats:
         """Statistics Calculator"""
+
         def qty_plants(
             garden: "GardenManager.Garden",
         ) -> tuple[(int, int, int, int)]:
@@ -150,11 +151,17 @@ class GardenManager:
         )
         print("Height validation test: True")
         GardenManager.GardenStats.gardens_scores(GardenManager.list_garden)
-        print(f"Garden scores - {GardenManager.list_garden[0].name}: "
-            f"{GardenManager.list_garden[0].score}", end ="")
+        print(
+            f"Garden scores - {GardenManager.list_garden[0].name}: "
+            f"{GardenManager.list_garden[0].score}",
+            end="",
+        )
         for i in range(1, len(GardenManager.list_garden)):
-            print(f", {GardenManager.list_garden[i].name}: "
-                f"{GardenManager.list_garden[i].score}", end ="")
+            print(
+                f", {GardenManager.list_garden[i].name}: "
+                f"{GardenManager.list_garden[i].score}",
+                end="",
+            )
         print()
         print(f"Total gardens managed: {len(GardenManager.list_garden)}")
 
@@ -194,31 +201,15 @@ class GardenManager:
 def main() -> None:
     """Test Function"""
     oak1 = GardenManager.Plant("Oak1 Tree", 101)
-    oak2 = GardenManager.Plant("Oak2 Tree", 153)
-    # oak3 = GardenManager.Plant("Oak3 Tree", 208)
 
     rose1 = GardenManager.FloweringPlant("Rose1", 26, "red flowers")
-    # rose2 = GardenManager.FloweringPlant("Rose2", 32, "white flowers")
     rose3 = GardenManager.FloweringPlant("Rose3", 92, "green flowers")
 
     sunflower1 = GardenManager.PrizeFlower(
         "Sunflower1", 51, "yellow flowers", 10
     )
-    # sunflower2 = GardenManager.PrizeFlower(
-    #    "Sunflower1", 63, "blue flowers", 14
-    # )
-    # sunflower3 = GardenManager.PrizeFlower(
-    #    "Sunflower1", 73, "orange flowers", 22
-    # )
 
     print("=== Garden Management System Demo ===")
-    # GardenManager.create_garden_network("toto")
-    # GardenManager.create_garden_network("mimi")
-    # GardenManager.create_garden_network("tomi")
-    # GardenManager.create_garden_network("mito")
-    # GardenManager.create_garden_network("toto")
-    # GardenManager.create_garden_network("totomimi")
-    # GardenManager.create_garden_network("toto et mimi")
     GardenManager.create_garden_network("Alice")
     GardenManager.create_garden_network("Alice", oak1)
     GardenManager.create_garden_network("Bob", rose3)
@@ -227,7 +218,6 @@ def main() -> None:
     GardenManager.create_garden_network("Alice", sunflower1)
     GardenManager.increase_watering_garden(GardenManager.list_garden[0])
     GardenManager.increase_watering_garden(GardenManager.list_garden[1])
-    # GardenManager.create_garden_network("Alice", oak2)
 
     print()
     for i in range(len(GardenManager.list_garden)):

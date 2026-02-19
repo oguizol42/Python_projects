@@ -96,14 +96,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-# •Provide controlled ways to modify plant data: set_height(), set_age()
-# •Provide safe ways to access plant data: get_height(), get_age()
-
-# === Garden Security System ===
-# Plant created: Rose
-# Height updated: 25cm [OK]
-# Age updated: 30 days [OK]
-# Invalid operation attempted: height -5cm [REJECTED]
-# Security: Negative height rejected
-# Current plant: Rose (25cm, 30 days)
