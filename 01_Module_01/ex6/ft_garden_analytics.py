@@ -6,7 +6,7 @@ class GardenManager:
     class Garden:
         """Garden Definition"""
 
-        def __init__(self, name: str):
+        def __init__(self, name: str) -> None:
             self.name = name
             self.reg_plant_list = []
             self.flow_plant_list = []
@@ -17,21 +17,23 @@ class GardenManager:
     class Plant:
         """Plant Definition"""
 
-        def __init__(self, name: str, height):
-            self.name = str(name)
-            self.height = int(height)
+        def __init__(self, name: str, height) -> None:
+            self.name = name
+            self.height = height
 
     class FloweringPlant(Plant):
         """FloweringPlant Definition"""
 
-        def __init__(self, name: str, height: int, bloom: str):
+        def __init__(self, name: str, height: int, bloom: str) -> None:
             super().__init__(name, height)
             self.bloom = str(bloom)
 
     class PrizeFlower(FloweringPlant):
         """PrizeFlower Definition"""
 
-        def __init__(self, name: str, height: int, bloom: str, points: int):
+        def __init__(
+            self, name: str, height: int, bloom: str, points: int
+        ) -> None:
             super().__init__(name, height, bloom)
             self.points = int(points)
 
@@ -40,7 +42,7 @@ class GardenManager:
 
         def qty_plants(
             garden: "GardenManager.Garden",
-        ) -> tuple[(int, int, int, int)]:
+        ) -> tuple[int, int, int, int]:
             """Plants Counter"""
             qty_reg, qty_flow, qty_priz, total = (
                 GardenManager.sum_three_size_list(
@@ -55,7 +57,16 @@ class GardenManager:
 
         def plant_growth_total(garden: "GardenManager.Garden") -> int:
             """Plant Growth Total in cm"""
-            _, _, _, growth = GardenManager.GardenStats.qty_plants(garden)
+            reg, flow, prize, growth = GardenManager.GardenStats.qty_plants(
+                garden
+            )
+            for i in range(reg):
+                garden.reg_plant_list[i].height += 1
+            for i in range(flow):
+                garden.flow_plant_list[i].height += 1
+            for i in range(prize):
+                garden.prize_plant_list[i].height += 1
+
             return growth
 
         plant_growth_total = staticmethod(plant_growth_total)
@@ -169,8 +180,18 @@ class GardenManager:
 
     def increase_watering_garden(garden: "GardenManager.Garden"):
         """Counting Watering Garden"""
+        print()
         print(f"{garden.name} is helping all plants grow...")
         garden.growth = GardenManager.GardenStats.plant_growth_total(garden)
+        reg = len(garden.reg_plant_list)
+        flow = len(garden.flow_plant_list)
+        prize = len(garden.prize_plant_list)
+        for i in range(reg):
+            print(f"{garden.reg_plant_list[i].name} grew 1cm")
+        for i in range(flow):
+            print(f"{garden.flow_plant_list[i].name} grew 1cm")
+        for i in range(prize):
+            print(f"{garden.prize_plant_list[i].name} grew 1cm")
 
     increase_watering_garden = staticmethod(increase_watering_garden)
 
@@ -202,8 +223,8 @@ def main() -> None:
     """Test Function"""
     oak1 = GardenManager.Plant("Oak1 Tree", 101)
 
-    rose1 = GardenManager.FloweringPlant("Rose1", 26, "red flowers")
-    rose3 = GardenManager.FloweringPlant("Rose3", 92, "green flowers")
+    rose1 = GardenManager.FloweringPlant("Rose1", 25, "red flowers")
+    rose3 = GardenManager.FloweringPlant("Rose3", 91, "green flowers")
 
     sunflower1 = GardenManager.PrizeFlower(
         "Sunflower1", 51, "yellow flowers", 10

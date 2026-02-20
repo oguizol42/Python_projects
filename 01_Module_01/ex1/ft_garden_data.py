@@ -1,18 +1,15 @@
 class Plant:
     """Plant Informations"""
 
-    def __init__(self, name: str, height: int, age: int):
+    def __init__(self, name: str, height: int, age: int) -> None:
         """def plant informations"""
-        self.name = str(name)
-        self.height = int(height)
-        self.age = int(age)
+        self.name = name
+        self.height = height
+        self.age = age
 
     def display_plant_info(self) -> None:
         """Display Plant Informations"""
-        name = str(self.name) + ":"
-        height = str(self.height) + "cm,"
-        age = str(self.age) + " days old"
-        print(name, height, age)
+        print(f"{self.name}: {self.height}cm, {self.age} days old")
 
 
 def init_three_plants() -> list[Plant]:

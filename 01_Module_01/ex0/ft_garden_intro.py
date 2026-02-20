@@ -1,9 +1,9 @@
 def display_garden(name: str, height: int, age: int) -> None:
     """Displaying garden plants informations"""
     print("=== Welcome to My Garden ===")
-    print("Name:", str(name))
-    print("Height:", str(height))
-    print("Age:", int(age), "days")
+    print(f"Name: {name}")
+    print(f"Height: {height}cm")
+    print(f"Age: {age} days")
     print()
     print("=== End of Program ===")
 
@@ -11,7 +11,7 @@ def display_garden(name: str, height: int, age: int) -> None:
 def main() -> None:
     """=== Welcome to My Garden ==="""
     name = "Rose"
-    height = "25cm"
+    height = 25
     age = 30
     display_garden(name, height, age)
 
