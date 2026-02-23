@@ -20,7 +20,7 @@ def water_plants(plants_list: list) -> None:
         check = False
     finally:
         print("Closing watering system (cleanup)")
-        if check == True:
+        if check is True:
             print("Watering completed successfully!")
         else:
             print()
