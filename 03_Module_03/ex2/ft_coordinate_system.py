@@ -1,3 +1,37 @@
+import math
+import sys
+
+
+def main():
+    """Calcul Distances Between 3D Points"""
+    try:
+        print("=== Game Coordinate System ===")
+        print()
+        pos_base: tuple = int(0, 0, 0)
+        # position: tuple = int(10, "bob", 5)
+        print("Position created:", position)
+        print("Distance between:", pos_base, "and", position, ":")
+        # pos_player: tuple = (3, 4, 0)
+    except ValueError:
+        print()
+        print('Parsing invalid coordinates: "abc,def,ghi"')
+        print(
+            "Error parsing coordinates: "
+            "invalid literal for int() with base 10: 'abc'"
+        )
+        # print('Error details - Type: ValueError, Args: '
+        #       '("invalid literal for int() with base 10: 'abc'",)'
+        # )
+    finally:
+        print()
+        print("Unpacking demonstration:")
+        # print(f"Player at x=", {pos_player[0]}, " y=", {pos_player[1]}, " z=", {pos_player[2]}")
+        # print("Coordinates: X=3, Y=4, Z=0")
+
+
+if __name__ == "__main__":
+    main()
+
 # $> python3 ft_coordinate_system.py
 
 # === Game Coordinate System ===

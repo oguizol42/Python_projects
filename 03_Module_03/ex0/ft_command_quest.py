@@ -1,21 +1,18 @@
-# $> python3 ft_command_quest.py
-# === Command Quest ===
-# No arguments provided!
-# Program name: ft_command_quest.py
-# Total arguments: 1
+import sys
 
-# $> python3 ft_command_quest.py hello world 42
-# === Command Quest ===
-# Program name: ft\_command\_quest.py
-# Arguments received: 3
-# Argument 1: hello
-# Argument 2: world
-# Argument 3: 42
-# Total arguments: 4
 
-# $> python3 ft_command_quest.py "Data Quest"
-# === Command Quest ===
-# Program name: ft_command_quest.py
-# Arguments received: 1
-# Argument 1: Data Quest
-# Total arguments: 2
+def main() -> None:
+    """take Users Arguments"""
+    argc = len(sys.argv)
+    print("=== Command Quest ===")
+    print(f"Program name: {sys.argv[0]}")
+    if argc == 1:
+        print("No arguments provided!")
+    else:
+        for i in range(1, argc):
+            print(f"Argument {i}: {sys.argv[i]}")
+    print(f"Total arguments: {argc}")
+
+
+if __name__ == "__main__":
+    main()
