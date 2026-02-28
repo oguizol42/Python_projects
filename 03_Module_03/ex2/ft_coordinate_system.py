@@ -1,52 +1,64 @@
 import math
-import sys
 
 
-def main():
-    """Calcul Distances Between 3D Points"""
+def parsing(string: str) -> tuple:
+    """Transforme une chaine de caractere en tuple"""
+    string_lst = string.split(",")
+    coord = (int(string_lst[0]), int(string_lst[1]), int(string_lst[2]))
+    return coord
+
+
+def calcul_distance(pos1: tuple, pos2: tuple) -> float:
+    """Calcul Distance Between Two Points"""
+    x1 = int(pos1[0])
+    x2 = int(pos2[0])
+    y1 = int(pos1[1])
+    y2 = int(pos2[1])
+    z1 = int(pos1[2])
+    z2 = int(pos2[2])
+    result = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+    return result
+
+
+def main() -> None:
+    """Manage Points On Map"""
+    print("=== Game Coordinate System ===")
+    print()
     try:
-        print("=== Game Coordinate System ===")
-        print()
-        pos_base: tuple = int(0, 0, 0)
-        # position: tuple = int(10, "bob", 5)
-        print("Position created:", position)
-        print("Distance between:", pos_base, "and", position, ":")
-        # pos_player: tuple = (3, 4, 0)
-    except ValueError:
-        print()
-        print('Parsing invalid coordinates: "abc,def,ghi"')
+        pos: tuple = (10, 20, 5)
+        map_orig: tuple = (0, 0, 0)
+    except ValueError as e:
+        print(e)
+    else:
+        print(f"Position created: ({pos[0]}, {pos[1]}, {pos[2]})")
+        dist = calcul_distance(pos, map_orig)
         print(
-            "Error parsing coordinates: "
-            "invalid literal for int() with base 10: 'abc'"
+            f"Distance between ({map_orig[0]}, {map_orig[1]}, "
+            f"{map_orig[2]}) and ({pos[0]}, {pos[1]}, {pos[2]}): {dist}"
         )
-        # print('Error details - Type: ValueError, Args: '
-        #       '("invalid literal for int() with base 10: 'abc'",)'
-        # )
-    finally:
+    print()
+    try:
+        string: str = "3,4,0"
+        print(f"Parsing coordinates: {string}")
+        test_parsing: tuple = parsing(string)
+        print(f"Parsed position: {test_parsing}")
+        dist = calcul_distance(map_orig, test_parsing)
+        print(f"Distance between {map_orig} and {test_parsing}: {dist}")
         print()
-        print("Unpacking demonstration:")
-        # print(f"Player at x=", {pos_player[0]}, " y=", {pos_player[1]}, " z=", {pos_player[2]}")
-        # print("Coordinates: X=3, Y=4, Z=0")
+        string: str = "abc,def,ghi"
+        print(f"Parsing invalid coordinates: {string}")
+        error: tuple = parsing(string)
+    except ValueError as e:
+        print(f"Error parsing coordinates: {e}")
+        print(f'Error details - Type: ValueError, Args: ("{e}",)')
+        print()
+    else:
+        print(error)
+    print("Unpacking demonstration:")
+    X, Y, Z = test_parsing
+    print(f"Player at x={X}, y={Y}, z={Z}")
+    print(f"Coordinates: X={X}, Y={Y}, Z={Z}")
 
 
 if __name__ == "__main__":
     main()
-
-# $> python3 ft_coordinate_system.py
-
-# === Game Coordinate System ===
-
-# Position created: (10, 20, 5)
-# Distance between (0, 0, 0) and (10, 20, 5): 22.91
-
-# Parsing coordinates: "3,4,0"
-# Parsed position: (3, 4, 0)
-# Distance between (0, 0, 0) and (3, 4, 0): 5.0
-
-# Parsing invalid coordinates: "abc,def,ghi"
-# Error parsing coordinates: invalid literal for int() with base 10: 'abc'
-# Error details - Type: ValueError, Args: ("invalid literal for int() with base 10: 'abc'",)
-
-# Unpacking demonstration:
-# Player at x=3, y=4, z=0
-# Coordinates: X=3, Y=4, Z=0
