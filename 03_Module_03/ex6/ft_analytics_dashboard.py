@@ -1,13 +1,3 @@
-def dictionary() -> dict:
-    """Create a Dcitionary of Players"""
-    new_dict: dict = {
-        "alice": 2300,
-        "bob": 1800,
-        "charlie": 2150,
-    }
-    return new_dict
-
-
 def tuple_list() -> list:
     """Create a List of Tuples"""
     new_list: list = [
@@ -17,6 +7,25 @@ def tuple_list() -> list:
         ("diana", 2050, False),
     ]
     return new_list
+
+
+def tuple_list2() -> list:
+    """Create a List of Tuples"""
+    new_list: list = [
+        ("alice", 2300, 5),
+        ("bob", 900, 4),
+        ("charlie", 2150, 2),
+        ("diana", 2050, 1),
+    ]
+    return new_list
+
+
+def dictionary() -> dict:
+    """Create a Dcitionary of Players"""
+    players_list: list = []
+    players_list = tuple_list()
+    new_dict = {name: score for name, score, _ in players_list}
+    return new_dict
 
 
 def scores_categories_determining(scores_list: list) -> dict:
@@ -56,7 +65,7 @@ def set_creator() -> tuple[set, list]:
         "charlie",
         "diana",
     ]
-    players: set = {}
+    players: set = set()
     players = {join for join in players_list}
     alice: set = {
         "first kill",
@@ -87,7 +96,7 @@ def set_creator() -> tuple[set, list]:
 
 def unique_achievement_sets(set_list: list) -> set:
     """Create a Set of Unique Achievements"""
-    set_final: set = {}
+    set_final: set = set()
     set0: set = set_list[0]
     set1: set = set_list[1]
     set2: set = set_list[2]
@@ -108,7 +117,7 @@ def active_regions_set(set_list: list) -> set:
     return set_final
 
 
-def average_calcul(new_list: list) -> int:
+def average_calcul(new_list: list) -> float:
     """Calcul the Average Score"""
     average: int = 0
     scores_list: list = []
@@ -127,33 +136,40 @@ def find_player_with_score(score: int, players_list: list) -> str:
 
 def find_high_score(players_list: list) -> int:
     """Return the  High Score"""
-    scores: list
-    player: list
+    scores: list = []
     scores = [player[1] for player in players_list]
     return max(scores)
 
 
+def qty_achievements_totale(players_list: list) -> int:
+    """Return Quantity totale of achievements"""
+    qty_totale: list = [achievement[2] for achievement in players_list]
+    return sum(qty_totale)
+
+
+def find_achievements_player(name: str, players_list: list) -> int:
+    """Return Achievements's Quantity of one Player"""
+    for player in players_list:
+        if player[0] == name:
+            return player[2]
+
+
 def main() -> None:
-    high_scores_list: list = [str]
-    scores_list: list = [int]
-    players_list: list = [str]
+    high_scores_list: list[str]
+    scores_list: list[int]
+    players_list: list[str]
     new_list: list = []
     set_list: list = []
     new_dict: dict = {}
     dictionary_cat: dict = {}
-    players: set = {}
-    top_player: str
-    alice: set = {}
-    bob: set = {}
-    charlie: set = {}
-    diana: set = {}
-    unique_set = {}
-    common_set = {}
+    players: set = set()
+    unique_set = set()
+    common_set = set()
     player_name: str
-    score: int
     high_score: int = 0
-    average: int
-    state: bool
+    average: float
+    achievements_total: int = 0
+    achievements_player: int = 0
 
     """Game Analytics Dashboard"""
     print("=== Game Analytics Dashboard ===")
@@ -188,66 +204,20 @@ def main() -> None:
     print("Active regions:", common_set)
     print()
     print("=== Combined Analysis ===")
-    new_list = tuple_list()
+    new_list = tuple_list2()
     print("Total players:", len(new_list))
-    average = average_calcul(new_list)
-    print("Average score:", average)
     high_score = find_high_score(new_list)
     player_name = find_player_with_score(high_score, new_list)
+    achievements_player = find_achievements_player(player_name, new_list)
+    achievements_total = qty_achievements_totale(new_list)
+    print(f"Total unique achievements: {achievements_total}")
+    average = average_calcul(new_list)
+    print("Average score:", average)
     print(
-        f"Top performer: {player_name} ({high_score} points, 5 achievements)"
+        f"Top performer: {player_name} ({high_score} points,"
+        f"{achievements_player} achievements)"
     )
 
 
-# Total unique achievements: 12
-# Average score: 2062.5
-# Top performer: alice (2300 points, 5 achievements)
-
 if __name__ == "__main__":
     main()
-
-
-# === List Comprehension Examples ===
-# High scorers (>2000): ['alice', 'charlie', 'diana']
-# Scores doubled: [4600, 3600, 4300, 4100]
-# Active players: ['alice', 'bob', 'charlie']
-
-# === Dict Comprehension Examples ===
-# Player scores: {'alice': 2300, 'bob': 1800, 'charlie': 2150}
-# Score categories: {'high': 3, 'medium': 2, 'low': 1}
-# Achievement counts: {'alice': 5, 'bob': 3, 'charlie': 7}
-
-# === Set Comprehension Examples ===
-# Unique players: {'alice', 'bob', 'charlie', 'diana'}
-# Unique achievements: {'first_kill', 'level_10', 'boss_slayer'}
-# Active regions: {'north', 'east', 'central'}
-
-# === Combined Analysis ===
-# Total players: 4
-# Total unique achievements: 12
-# Average score: 2062.5
-# Top performer: alice (2300 points, 5 achievements)
-
-# $> python3 ft_analytics_dashboard.py
-# === Game Analytics Dashboard ===
-
-# === List Comprehension Examples ===
-# High scorers (>2000): ['alice', 'charlie', 'diana']
-# Scores doubled: [4600, 3600, 4300, 4100]
-# Active players: ['alice', 'bob', 'charlie']
-
-# === Dict Comprehension Examples ===
-# Player scores: {'alice': 2300, 'bob': 1800, 'charlie': 2150}
-# Score categories: {'high': 3, 'medium': 2, 'low': 1}
-# Achievement counts: {'alice': 5, 'bob': 3, 'charlie': 7}
-
-# === Set Comprehension Examples ===
-# Unique players: {'alice', 'bob', 'charlie', 'diana'}
-# Unique achievements: {'first_kill', 'level_10', 'boss_slayer'}
-# Active regions: {'north', 'east', 'central'}
-
-# === Combined Analysis ===
-# Total players: 4
-# Total unique achievements: 12
-# Average score: 2062.5
-# Top performer: alice (2300 points, 5 achievements)
