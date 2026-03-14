@@ -99,7 +99,10 @@ def main() -> None:
             print()
             print("=== Current Inventory ===")
             for one_item in items_list:
-                percent: float = 100 * (one_item[1] / total_items_qty)
+                if total_items_qty > 0:
+                    percent: float = 100 * (one_item[1] / total_items_qty)
+                else:
+                    percent: float = 0
                 print(f"{one_item[0]}: {one_item[1]} units ({percent:.1f}%)")
             print()
             most, least = abundance_evaluator(items_list)
