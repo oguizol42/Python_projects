@@ -178,6 +178,7 @@ def main() -> None:
     high_scores_list = [
         player for player, score, _ in new_list if score > 2000
     ]
+    print("=== List Comprehension Examples ===")
     print(f"High scorers (>2000): {high_scores_list}")
     scores_list = [score * 2 for _, score, _ in new_list]
     print(f"Scores doubled: {scores_list}")

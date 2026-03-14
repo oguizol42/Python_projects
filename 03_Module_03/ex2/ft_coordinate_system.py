@@ -2,7 +2,7 @@ import math
 
 
 def parsing(string: str) -> tuple:
-    """Transforme une chaine de caractere en tuple"""
+    """Transform a string into a tuple"""
     string_lst = string.split(",")
     coord = (int(string_lst[0]), int(string_lst[1]), int(string_lst[2]))
     return coord

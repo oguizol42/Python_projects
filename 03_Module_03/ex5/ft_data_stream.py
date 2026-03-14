@@ -175,6 +175,7 @@ def main() -> None:
     nbr = prime_numbers_generator(first)
     print(f"Prime numbers (first {first}): ", end="")
     print_generator(nbr, (first))
+    print()
 
 
 if __name__ == "__main__":

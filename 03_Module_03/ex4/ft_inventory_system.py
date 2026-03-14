@@ -26,6 +26,7 @@ def manage_qty(dictionary: dict, items_list: list) -> None:
 def properties_demo(
     dictionary: dict, clef_test: str, items_list: list
 ) -> None:
+    check: bool = False
     """Print Properties Dictionary"""
     print("=== Dictionary Properties Demo ===")
     print("Dictionary keys: ", end="")
@@ -41,9 +42,12 @@ def properties_demo(
         if i < (len(items_list) - 1):
             print(", ", end="")
     print()
+    check = clef_test in dictionary["all_items"]
+    if check is True and dictionary[clef_test] < 1:
+        check = False
     print(
         f"Sample lookup - '{clef_test}'in inventory:",
-        clef_test in dictionary["all_items"],
+        check,
     )
 
 
@@ -64,7 +68,10 @@ def create_dict(data_list: list) -> dict:
     dictionary: dict = {}
     for data in data_list:
         data_split = data.split(":")
-        dictionary.update({str(data_split[0]): int(data_split[1])})
+        if len(data_split) == 2:
+            dictionary.update({str(data_split[0]): int(data_split[1])})
+        else:
+            raise ValueError(f"{data_split} is not conform")
     return dictionary
 
 
@@ -77,7 +84,7 @@ def items_counter(dictionary: dict) -> tuple[int, int]:
     return unique_items_qty, total_items_qty
 
 
-def main():
+def main() -> None:
     """Inventory System"""
     most: list = []
     least: list = []

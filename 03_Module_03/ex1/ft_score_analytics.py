@@ -15,7 +15,7 @@ def main() -> None:
             try:
                 scores.append(int(sys.argv[i]))
             except ValueError:
-                print("oops, I typed banana instead of 1000")
+                print(f"oops, I typed {sys.argv[i]} instead of a number")
         if len(scores) > 0:
             print(f"Scores processed: {scores}")
             total_players: int = len(scores)
