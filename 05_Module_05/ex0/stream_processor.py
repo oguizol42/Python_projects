@@ -130,7 +130,7 @@ class LogProcessor(DataProcessor):
         )
 
 
-def main():
+def main() -> None:
     """CODE NEXUS - DATA PROCESSOR FOUNDATION"""
     data_process: Optional[Any] = None
     object_list: list[Any] = [
