@@ -77,7 +77,6 @@ class TextProcessor(DataProcessor):
         try:
             if not isinstance(data, str):
                 raise TypeError("ERROR: Data is not text")
-            self.data = str(data)
             return True
         except TypeError as e:
             print(e)
@@ -96,8 +95,8 @@ class LogProcessor(DataProcessor):
 
     def process(self, data: Any) -> str:
         if self.validate(data) is True:
-            for self.key_str, self.value_str in data.items():
-                pass
+            self.key_str = data[0]
+            self.value_str = data[1]
             if self.key_str == "ERROR":
                 self.result: str = "[ALERT] "
             elif self.key_str == "INFO":
@@ -112,12 +111,15 @@ class LogProcessor(DataProcessor):
 
     def validate(self, data: Any) -> bool:
         try:
-            if not isinstance(data, dict):
-                raise TypeError("ERROR: Data is not dictionary")
-            self.data = dict(data)
+            if not isinstance(data, tuple):
+                raise TypeError("ERROR: Data is not tuple")
+            elif len(data) != 2:
+                raise ValueError("ERROR: Data is not tuple of two strings")
+            elif not isinstance(data[0], str) or not isinstance(data[1], str):
+                raise ValueError("ERROR: Data is not tuple of two strings")
 
             return True
-        except TypeError as e:
+        except (TypeError, ValueError) as e:
             print(e)
             return False
 
@@ -134,7 +136,7 @@ def main():
     object_list: list[Any] = [
         (NumericProcessor(), [1, 2, 3]),
         (TextProcessor(), "Hello Babies"),
-        (LogProcessor(), {"INFO": "System ready"}),
+        (LogProcessor(), ("INFO", "System ready")),
     ]
     n: int = 1
     print("=== CODE NEXUS - DATA PROCESSOR FOUNDATION ===\n")
@@ -156,7 +158,7 @@ def main():
     print("\nInitializing Log Processor...")
     try:
         data_process = LogProcessor()
-        print(data_process.process({"ERROR": "Connection timeout"}))
+        print(data_process.process(("ERROR", "Connection timeout")))
     except NameError as e:
         print(e)
         return 1
