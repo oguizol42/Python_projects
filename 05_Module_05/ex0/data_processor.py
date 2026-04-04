@@ -1,29 +1,29 @@
-from typing import Any, List, Union
+from typing import Any, Union
 from abc import ABC, abstractmethod
 
 
 class DataProcessor(ABC):
     """Process Architecture of Processors"""
+    def __init__(self):
+        self.stack_datas: list = []
+        self.rank: int = -1
 
-    # Validation des donnees
     @abstractmethod
     def validate(self, data: Any) -> bool:
         """Check the Input Data"""
         pass
 
-    # empilement des donnees si valide (appel a validate) sinon leve une erreur
     @abstractmethod
     def ingest(self, data: Any) -> None:
         """Process the Input Data"""
         pass
 
-    # sort la plus ancienne donnee stockee (FIFO)
     def output(self) -> tuple[int, str]:
         """Output Ingested Data"""
         output_str: str
-        if len(self.stack_numeric) > 0:
+        if len(self.stack_datas) > 0:
             self.rank += 1
-            output_str = self.stack_numeric.pop(0)
+            output_str = self.stack_datas.pop(0)
             return self.rank, output_str
         raise IndexError("The stack is empty or is not exist")
 
@@ -32,12 +32,8 @@ class NumericProcessor(DataProcessor):
     """Process Numeric Datas"""
 
     def __init__(self):
-        # self.stack_list: list = [Union(int, float, list(Union(int, float)))]
-        self.stack_numeric: list = []
-        self.rank: int = -1
+        super().__init__()
 
-    # Validation des donnees
-    # ingests int, float, and lists of both types (includingmixed-type lists)
     def validate(self, data: Any) -> bool:
         """Check the Input Data"""
         if not isinstance(data, int):
@@ -51,15 +47,16 @@ class NumericProcessor(DataProcessor):
                         return False
         return True
 
-    # empilement des donnees si valide (appel a validate) sinon leve une erreur
-    def ingest(self, data: Any) -> None:
+    def ingest(self, data: Union[int, float, list[Union[int, float]]]) -> None:
         """Process the Input Data"""
         if self.validate(data) is False:
-            if isinstance(data, str):
-                raise ValueError("Invalide Data")
-        self.stack_numeric.append(str(data))
+            raise ValueError("Got exception: Improper numeric data")
+        if isinstance(data, list):
+            for extract in data:
+                self.stack_datas.append(str(extract))
+        else:
+            self.stack_datas.append(str(data))
 
-    # sort la plus ancienne donnee stockee (FIFO)
     def output(self) -> tuple[int, str]:
         """Output Ingested Data"""
         return super().output()
@@ -68,44 +65,98 @@ class NumericProcessor(DataProcessor):
 class TextProcessor(DataProcessor):
     """Process String Datas"""
 
-    def __init__(self, string: str, string_list: list[str]) -> None:
-        pass
+    def __init__(self) -> None:
+        super().__init__()
 
     def validate(self, data: Any) -> bool:
         """Check the Input Data"""
-        pass
+        if not isinstance(data, str):
+            if not isinstance(data, list):
+                return False
+        if isinstance(data, list):
+            for check in data:
+                if not isinstance(check, str):
+                    return False
+        return True
 
-    def ingest(self, data: Any) -> None:
+    def ingest(self, data: Union[str, list[str]]) -> None:
         """Process the Input Data"""
-        pass
+        if self.validate(data) is False:
+            raise ValueError("Got exception: Improper string data")
+        if isinstance(data, list):
+            for extract in data:
+                self.stack_datas.append(str(extract))
+        else:
+            self.stack_datas.append(str(data))
 
-    def output():
+    def output(self) -> tuple[int, str]:
         """Output Ingested Data"""
-        pass
+        return super().output()
 
 
 class LogProcessor(DataProcessor):
     """Process Log Datas"""
 
-    def __init__(self, dictionnary: dict[str, str]):
-        pass
+    def __init__(self) -> None:
+        super().__init__()
 
     def validate(self, data: Any) -> bool:
         """Check the Input Data"""
-        pass
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if not isinstance(key, str):
+                    return False
+                if not isinstance(value, str):
+                    return False
+        elif isinstance(data, list):
+            for one_data in data:
+                if not isinstance(one_data, dict):
+                    return False
+                for key, value in one_data.items():
+                    if not isinstance(key, str):
+                        return False
+                    if not isinstance(value, str):
+                        return False
+        else:
+            return False
+        return True
 
-    def ingest(self, data: Any) -> None:
+    def ingest(
+        self, data: Union[dict[str, str], list[dict[str, str]]]
+    ) -> None:
         """Process the Input Data"""
-        pass
+        cnt: int = 0
+        final_string: str
+        if self.validate(data) is False:
+            raise ValueError("Got exception: Improper dictionary data")
+        if isinstance(data, list):
+            for extract in data:
+                cnt = 0
+                for value in extract.values():
+                    if cnt == 0:
+                        final_string = value
+                        cnt += 1
+                    else:
+                        final_string += ": " + value
+                self.stack_datas.append(str(final_string))
+        else:
+            cnt = 0
+            for value in data.values():
+                if cnt == 0:
+                    final_string = value
+                    cnt += 1
+                else:
+                    final_string += ": " + value
+            self.stack_datas.append(str(final_string))
 
-    def output():
+    def output(self) -> tuple[int, str]:
         """Output Ingested Data"""
-        pass
+        return super().output()
 
 
 def main() -> None:
     """Code Nexus - Data Processor"""
-    instance_test: any
+    instance_test: Any
     rank: int
     value_txt: str
     print("=== Code Nexus - Data Processor ===\n")
@@ -114,9 +165,6 @@ def main() -> None:
         try:
             print("Testing Numeric Processor...")
             instance_test = NumericProcessor()
-            instance_test.ingest(1)
-            instance_test.ingest(2)
-            instance_test.ingest(3)
             print(
                 f"Trying to validate input '42': {instance_test.validate(42)}"
             )
@@ -133,13 +181,64 @@ def main() -> None:
             print("Got exception: Improper numeric data")
         try:
             print("Processing data: [1, 2, 3, 4, 5]")
+            instance_test.ingest([1, 2, 3, 4, 5])
             print("Extracting 3 values...")
             for n in range(3):
                 rank, value_txt = instance_test.output()
                 print(f"Numeric value {rank}: {value_txt}")
         except ValueError as e:
             print(e)
+    except NameError as e:
+        print(e)
+    except IndexError as e:
+        print(e)
 
+    try:
+        try:
+            print("\nTesting Text Processor...")
+            instance_test = TextProcessor()
+            print(
+                f"Trying to validate input '42': {instance_test.validate(42)}"
+            )
+            print(
+                "Processing data: ['Hello', 'Nexus', 'World']: "
+            )
+            instance_test.ingest(['Hello', 'Nexus', 'World'])
+            print("Extracting 1 value...")
+            rank, value_txt = instance_test.output()
+            print(f"Text value {rank}: {value_txt}")
+        except ValueError as e:
+            print(e)
+    except NameError as e:
+        print(e)
+    except IndexError as e:
+        print(e)
+
+    try:
+        print("\nTesting Log Processor...")
+        instance_test = LogProcessor()
+        print(
+            "Trying to validate input 'Hello': "
+            f"{instance_test.validate('Hello')}"
+        )
+        print(
+            "Processing data: [{'log_level': "
+            "'NOTICE', 'log_message': 'Connection to server'}, "
+            "{'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}]: "
+        )
+        instance_test.ingest(
+            [
+                {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
+                {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}
+            ]
+        )
+        print("Extracting 2 values...")
+        rank, value_txt = instance_test.output()
+        print(f"Text value {rank}: {value_txt}")
+        rank, value_txt = instance_test.output()
+        print(f"Text value {rank}: {value_txt}")
+    except ValueError as e:
+        print(e)
     except NameError as e:
         print(e)
     except IndexError as e:
@@ -148,31 +247,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# === Code Nexus - Data Processor ===
-
-# Testing Numeric Processor...
-# Trying to validate input '42': True
-# Trying to validate input 'Hello': False
-# Test invalid ingestion of string 'foo' without prior validation:
-# Got exception: Improper numeric data
-# Processing data: [1, 2, 3, 4, 5]
-# Extracting 3 values...
-# Numeric value 0: 1
-# Numeric value 1: 2
-# Numeric value 2: 3
-
-# Testing Text Processor...
-# Trying to validate input '42': False
-# Processing data: ['Hello', 'Nexus', 'World']
-# Extracting 1 value...
-# Text value 0: Hello
-
-# Testing Log Processor...
-# Trying to validate input 'Hello': False
-# Processing data: [{'log_level': 'NOTICE', 'log_message': 'Connection to server'}, {'log_level': 'ERROR
-# ', 'log_message': 'Unauthorized access!!'}]
-# Extracting 2 values...
-# Log entry 0: NOTICE: Connection to server
-# Log entry 1: ERROR: Unauthorized access!!
