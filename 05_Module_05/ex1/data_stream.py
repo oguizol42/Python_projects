@@ -1,3 +1,4 @@
+import typing
 from typing import Any, Union
 from abc import ABC, abstractmethod
 
@@ -103,9 +104,9 @@ class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         """Check the Input Data"""
         if isinstance(data, dict):
-            if not 'log_level' in data:
-                    return False
-            if not 'log_message' in data:
+            if 'log_level' not in data:
+                return False
+            if 'log_message' not in data:
                 return False
             for key, value in data.items():
                 if not isinstance(key, str):
@@ -113,14 +114,14 @@ class LogProcessor(DataProcessor):
                 if not isinstance(value, str):
                     return False
                 if key != 'log_level' and key != 'log_message':
-                        return False
+                    return False
         elif isinstance(data, list):
             for one_data in data:
                 if not isinstance(one_data, dict):
                     return False
-                if not 'log_level' in one_data:
+                if 'log_level' not in one_data:
                     return False
-                if not 'log_message' in one_data:
+                if 'log_message' not in one_data:
                     return False
                 for key, value in one_data.items():
                     if not isinstance(key, str):
@@ -162,95 +163,136 @@ class LogProcessor(DataProcessor):
         return super().output()
 
 
+class DataStream():
+    """Process Stream Data"""
+
+    def __init__(self) -> None:
+        self.stack_instance: list[typing.Any] = []
+
+    # Verifie si l'instance recu est de type DataProcessor
+    # et l'ajoute a une pile le cas echeant
+    def register_processor(self, proc: DataProcessor) -> None:
+        if isinstance(proc, DataProcessor):
+            self.stack_instance.append(proc)
+        else:
+            print(f"Error: {proc} is not a valid DataProcessor")
+
+    # Analyse chaque element de la list avec validate
+    # par polymorphisme et les envoie a la bonne instance
+    # si aucune trouvée, affiche un message d'erreur et passe a la suite
+    def process_stream(self, stream: list[typing.Any]) -> None:
+        check: bool
+        if len(self.stack_instance) == 0 or len(stream) == 0:
+            print("No processor found, no data")
+        else:
+            for data in stream:
+                check = False
+                for process in self.stack_instance:
+                    if process.validate(data):
+                        process.ingest(data)
+                        check = True
+                        break
+                if check is False:
+                    print(
+                        "DataStream error - "
+                        f"Can't process element in stream: {data}"
+                    )
+
+    # Affiche les statistiques de chaque instance
+    def print_processors_stats(self) -> None:
+        qty_processed: int
+        qty_remained: int
+        text: str
+        print("== DataStream statistics ==")
+        if len(self.stack_instance) > 0:
+            for process in self.stack_instance:
+                qty_remained = len(process.stack_datas)
+                qty_processed = qty_remained + process.rank + 1
+                text = process.__class__.__name__
+                text = text.replace("Processor", " Processor")
+                print(
+                    f'{text}'
+                    f": total {qty_processed} items processed,"
+                    f" remaining {qty_remained} on processor"
+                )
+        else:
+            print("ERROR: no instance registered")
+
+    # Scenario de test de DataStream, base sur l'exemple du sujet
+    def scenario_test(self) -> None:
+        numeric_process = NumericProcessor()
+        text_process = TextProcessor()
+        log_process = LogProcessor()
+        print("=== Code Nexus - Data Stream ===\n")
+        print("Initialize Data Stream...")
+        try:
+            self.process_stream([1, 'a'])
+            print("Registering Numeric Processor\n")
+            self.register_processor(numeric_process)
+            print(
+                "Send first batch of data on stream: ['Hello world', "
+                "[3.14, -1, 2.71], [{'log_level': 'WARNING', '\n"
+                "      log_message': 'Telnet access! Use ssh instead'}, "
+                "{'log_level': 'INFO', 'log_message': 'User wil is\n"
+                "      connected'}], 42, ['Hi', 'five']]"
+            )
+            self.process_stream(
+                [
+                    'Hello world', [3.14, -1, 2.71],
+                    [
+                        {
+                            'log_level': 'WARNING',
+                            'log_message': 'Telnet access! Use ssh instead'
+                        },
+                        {
+                            'log_level': 'INFO',
+                            'log_message': 'User wil is connected'
+                        }
+                    ],
+                    42, ['Hi', 'five']
+                ]
+            )
+            self.print_processors_stats()
+            print("\nRegistering other data processors")
+            self.register_processor(text_process)
+            self.register_processor(log_process)
+            print("Send the same batch again")
+            self.process_stream(
+                [
+                    'Hello world', [3.14, -1, 2.71],
+                    [
+                        {
+                            'log_level': 'WARNING',
+                            'log_message': 'Telnet access! Use ssh instead'
+                        },
+                        {
+                            'log_level': 'INFO',
+                            'log_message': 'User wil is connected'
+                        }
+                    ],
+                    42, ['Hi', 'five']
+                ]
+            )
+            self.print_processors_stats()
+            print(
+                "\nConsume some elements from the data processors:"
+                " Numeric 3, Text 2, Log 1"
+            )
+            numeric_process.output()
+            numeric_process.output()
+            numeric_process.output()
+            text_process.output()
+            text_process.output()
+            log_process.output()
+            self.print_processors_stats()
+        except NameError as e:
+            print(e)
+
+
 def main() -> None:
-    """Code Nexus - Data Processor"""
-    instance_test: Any
-    rank: int
-    value_txt: str
-    print("=== Code Nexus - Data Processor ===\n")
-
-    try:
-        try:
-            print("Testing Numeric Processor...")
-            instance_test = NumericProcessor()
-            print(
-                f"Trying to validate input '42': {instance_test.validate(42)}"
-            )
-            print(
-                "Trying to validate input 'Hello': "
-                f"{instance_test.validate('Hello')}"
-            )
-            print(
-                "Test invalid ingestion of string 'foo'"
-                " without prior validation:"
-            )
-            instance_test.ingest("foo")
-        except ValueError as e:
-            print(e)
-        try:
-            print("Processing data: [1, 2, 3, 4, 5]")
-            instance_test.ingest([1, 2, 3, 4, 5])
-            print("Extracting 3 values...")
-            for n in range(3):
-                rank, value_txt = instance_test.output()
-                print(f"Numeric value {rank}: {value_txt}")
-        except ValueError as e:
-            print(e)
-    except NameError as e:
-        print(e)
-    except IndexError as e:
-        print(e)
-
-    try:
-        try:
-            print("\nTesting Text Processor...")
-            instance_test = TextProcessor()
-            print(
-                f"Trying to validate input '42': {instance_test.validate(42)}"
-            )
-            print(
-                "Processing data: ['Hello', 'Nexus', 'World']: "
-            )
-            instance_test.ingest(['Hello', 'Nexus', 'World'])
-            print("Extracting 1 value...")
-            rank, value_txt = instance_test.output()
-            print(f"Text value {rank}: {value_txt}")
-        except ValueError as e:
-            print(e)
-    except NameError as e:
-        print(e)
-    except IndexError as e:
-        print(e)
-
-    try:
-        print("\nTesting Log Processor...")
-        instance_test = LogProcessor()
-        print(
-            "Trying to validate input 'Hello': "
-            f"{instance_test.validate('Hello')}"
-        )
-        print(
-            "Processing data: [{'log_level': "
-            "'NOTICE', 'log_message': 'Connection to server'}, "
-            "{'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}]: "
-        )
-        instance_test.ingest(
-            [
-                {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
-                {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}
-            ]
-        )
-        print("Extracting 2 values...")
-        rank, value_txt = instance_test.output()
-        print(f"Text value {rank}: {value_txt}")
-        rank, value_txt = instance_test.output()
-        print(f"Text value {rank}: {value_txt}")
-    except ValueError as e:
-        print(e)
-    except NameError as e:
-        print(e)
-    except IndexError as e:
-        print(e)
+    """Code Nexus - Data Stream"""
+    test = DataStream()
+    test.scenario_test()
 
 
 if __name__ == "__main__":
