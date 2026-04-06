@@ -284,6 +284,8 @@ class DataStream():
             self.print_processors_stats()
         except NameError as e:
             print(e)
+        except IndexError as e:
+            print(e)
 
 
 def main() -> None:
