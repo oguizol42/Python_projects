@@ -169,18 +169,15 @@ class DataStream():
     def __init__(self) -> None:
         self.stack_instance: list[typing.Any] = []
 
-    # Verifie si l'instance recu est de type DataProcessor
-    # et l'ajoute a une pile le cas echeant
     def register_processor(self, proc: DataProcessor) -> None:
+        """Add DataProcessor Instance to the Stack"""
         if isinstance(proc, DataProcessor):
             self.stack_instance.append(proc)
         else:
             print(f"Error: {proc} is not a valid DataProcessor")
 
-    # Analyse chaque element de la list avec validate
-    # par polymorphisme et les envoie a la bonne instance
-    # si aucune trouvée, affiche un message d'erreur et passe a la suite
     def process_stream(self, stream: list[typing.Any]) -> None:
+        """Send Datas to the Appropriate Instance"""
         check: bool
         if len(self.stack_instance) == 0 or len(stream) == 0:
             print("No processor found, no data")
@@ -198,8 +195,8 @@ class DataStream():
                         f"Can't process element in stream: {data}"
                     )
 
-    # Affiche les statistiques de chaque instance
     def print_processors_stats(self) -> None:
+        """Print Instances Statistics"""
         qty_processed: int
         qty_remained: int
         text: str
@@ -218,8 +215,8 @@ class DataStream():
         else:
             print("ERROR: no instance registered")
 
-    # Scenario de test de DataStream, base sur l'exemple du sujet
     def scenario_test(self) -> None:
+        """Test Cases of DataStream"""
         numeric_process = NumericProcessor()
         text_process = TextProcessor()
         log_process = LogProcessor()
