@@ -1,12 +1,8 @@
 from alchemy.grimoire.light_validator import validate_ingredients
 
+
 def light_spell_allowed_ingredients() -> list[str]:
-    ingredients: list[str] = [
-        "earth",
-        "air",
-        "fire",
-        "water"
-    ]
+    ingredients: list[str] = ["earth", "air", "fire", "water"]
     return ingredients
 
 
