@@ -15,24 +15,18 @@ print(f"{bloomelle.describe()}")
 print(f"{bloomelle.attack()}")
 print(f"{bloomelle.heal()}")
 
-# Sproutling is a Grass type Creature
-# Sproutling uses Vine Whip!
-# Sproutling heals itself for a small amount
-# evolved:
-# Bloomelle is a Grass/Fairy type Creature
-# Bloomelle uses Petal Dance!
-# Bloomelle heals itself and others for a large amount
-
-# Testing Creature with transform capability
-# base:
-# Shiftling is a Normal type Creature
-# Shiftling attacks normally.
-# Shiftling shifts into a sharper form!
-# Shiftling performs a boosted strike!
-# Shiftling returns to normal.
-# evolved:
-# Morphagon is a Normal/Dragon type Creature
-# Morphagon attacks normally.
-# Morphagon morphs into a dragonic battle form!
-# Morphagon unleashes a devastating morph strike!
-# Morphagon stabilizes its form
+print("\nTesting Creature with transform capability")
+print("base:")
+shiftling = ex1.TransformCreatureFactory().create_base()
+print(f"{shiftling.describe()}")
+print(f"{shiftling.attack()}")
+print(f"{shiftling.transform()}")
+print(f"{shiftling.attack()}")
+print(f"{shiftling.revert()}")
+print(" evolved:")
+morphagon = ex1.TransformCreatureFactory().create_evolved()
+print(f"{morphagon.describe()}")
+print(f"{morphagon.attack()}")
+print(f"{morphagon.transform()}")
+print(f"{morphagon.attack()}")
+print(f"{morphagon.revert()}")

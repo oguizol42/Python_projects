@@ -22,9 +22,6 @@ class Flameling(Creature):
     def attack(self) -> str:
         return f"{self.name} uses Ember!"
 
-    def describe(self) -> str:
-        return f"{super().describe()}"
-
 
 class Pyrodon(Creature):
     def __init__(self, name: str) -> None:
@@ -33,9 +30,6 @@ class Pyrodon(Creature):
 
     def attack(self) -> str:
         return f"{self.name} uses Flamethrower!"
-
-    def describe(self) -> str:
-        return f"{super().describe()}"
 
 
 class Aquabub(Creature):
@@ -46,9 +40,6 @@ class Aquabub(Creature):
     def attack(self) -> str:
         return f"{self.name} uses Water Gun!"
 
-    def describe(self) -> str:
-        return f"{super().describe()}"
-
 
 class Torragon(Creature):
     def __init__(self, name: str) -> None:
@@ -57,9 +48,6 @@ class Torragon(Creature):
 
     def attack(self) -> str:
         return f"{self.name} uses Hydro Pump!"
-
-    def describe(self) -> str:
-        return f"{super().describe()}"
 
 
 class CreatureFactory(ABC):
