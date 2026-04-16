@@ -1,58 +1,48 @@
-# AMELIORER battle() POUR ORGANISER DES TOURNOIS ENTRE AUTANT DE CONCURANT QUE POSSIBLE
-# FAIRE mypy
-
-
 import ex0
 import ex1
 import ex2
-from typing import Union
+from ex0.creature_factory import CreatureFactory
+from ex2.abstract_strategy import BattleStrategy
 
 
-def battle(
-    tournament: list[
-        tuple[
-            Union[
-                ex0.FlameFactory,
-                ex0.AquaFactory,
-                ex1.HealingCreatureFactory,
-                ex1.TransformCreatureFactory,
-            ],
-            Union[
-                ex2.NormalStrategy,
-                ex2.AggressiveStrategy,
-                ex2.DefensiveStrategy,
-            ],
-        ]
-    ],
-) -> None:
+def battle(opponents: list[tuple[CreatureFactory, BattleStrategy]]) -> None:
     print("*** Tournament ***")
-    print(f"{len(tournament)} opponents involved\n")
-    print("* Battle *")
-    print(tournament[0][0].describe())
-    print(" vs.")
-    print(tournament[1][0].describe())
-    print(" now fight!")
-    print(tournament[0][1].act(tournament[0][0]))
-    if tournament[0][1].is_valid(tournament[0][0]) is True:
-        print(tournament[1][1].act(tournament[1][0]))
+    print(f"{len(opponents)} opponents involved")
+    for i in range(0, (len(opponents) - 1)):
+        for j in range((i + 1), len(opponents)):
 
+            factory_a, strat_a = opponents[i]
+            factory_b, strat_b = opponents[j]
 
-# * Battle *
-# Flameling is a Fire type Creature
-# vs.
-# Sproutling is a Grass type Creature
-# now fight!
-# Flameling uses Ember!
-# Sproutling uses Vine Whip!
-# Sproutling heals itself for a small amount
+            creature_a = factory_a.create_base()
+            creature_b = factory_b.create_base()
+
+            print("\n* Battle *")
+            print(creature_a.describe())
+            print(" vs.")
+            print(creature_b.describe())
+            print(" now fight!")
+
+            if not strat_a.is_valid(creature_a):
+                raise Exception(
+                    f"Invalid Creature '{creature_a.name}' for this strategy"
+                )
+
+            if not strat_b.is_valid(creature_b):
+                raise Exception(
+                    f"Invalid Creature '{creature_b.name}' for this strategy"
+                )
+
+            print(strat_a.act(creature_a))
+            print(strat_b.act(creature_b))
 
 
 def main() -> None:
     # • Create various Creature factories (from ex0 and ex1).
-    flameling = ex0.FlameFactory().create_base()
-    aquabub = ex0.AquaFactory().create_base()
-    sproutling = ex1.HealingCreatureFactory().create_base()
-    shiftling = ex1.TransformCreatureFactory().create_base()
+    flame_factory = ex0.FlameFactory()
+    aqua_factory = ex0.AquaFactory()
+    healing_creature_factory = ex1.HealingCreatureFactory()
+    transform_creature_factory = ex1.TransformCreatureFactory()
 
     # • Create the three strategies.
     normal_strategy = ex2.NormalStrategy()
@@ -60,68 +50,32 @@ def main() -> None:
     defensive_strategy = ex2.DefensiveStrategy()
 
     # • Define a single battle function that:
-    tournament0: list[
-        tuple[
-            Union[
-                ex0.FlameFactory,
-                ex0.AquaFactory,
-                ex1.HealingCreatureFactory,
-                ex1.TransformCreatureFactory,
-            ],
-            Union[
-                ex2.NormalStrategy,
-                ex2.AggressiveStrategy,
-                ex2.DefensiveStrategy,
-            ],
-        ]
-    ] = [(flameling, normal_strategy), (sproutling, defensive_strategy)]
-
-    tournament1: list[
-        tuple[
-            Union[
-                ex0.FlameFactory,
-                ex0.AquaFactory,
-                ex1.HealingCreatureFactory,
-                ex1.TransformCreatureFactory,
-            ],
-            Union[
-                ex2.NormalStrategy,
-                ex2.AggressiveStrategy,
-                ex2.DefensiveStrategy,
-            ],
-        ]
-    ] = [
-        (flameling, aggressive_strategy),
-        (sproutling, defensive_strategy),
+    tournament0 = [
+        (flame_factory, normal_strategy),
+        (healing_creature_factory, defensive_strategy),
     ]
 
-    tournament2: list[
-        tuple[
-            Union[
-                ex0.FlameFactory,
-                ex0.AquaFactory,
-                ex1.HealingCreatureFactory,
-                ex1.TransformCreatureFactory,
-            ],
-            Union[
-                ex2.NormalStrategy,
-                ex2.AggressiveStrategy,
-                ex2.DefensiveStrategy,
-            ],
-        ]
-    ] = [
-        (aquabub, normal_strategy),
-        (sproutling, defensive_strategy),
-        (shiftling, aggressive_strategy),
+    tournament1 = [
+        (flame_factory, aggressive_strategy),
+        (healing_creature_factory, defensive_strategy),
+    ]
+
+    tournament2 = [
+        (aqua_factory, normal_strategy),
+        (healing_creature_factory, defensive_strategy),
+        (transform_creature_factory, aggressive_strategy),
     ]
 
     print("Tournament 0 (basic)")
     print("[ (Flameling+Normal), (Healing+Defensive) ]")
     battle(tournament0)
 
-    print("\nTournament 1 (error)")
-    print("[ (Flameling+Aggressive), (Healing+Defensive) ]")
-    battle(tournament1)
+    try:
+        print("\nTournament 1 (error)")
+        print("[ (Flameling+Aggressive), (Healing+Defensive) ]")
+        battle(tournament1)
+    except Exception as e:
+        print(f"Battle error, aborting tournament: {e}")
 
     print("\nTournament 2 (multiple)")
     print("[ (Aquabub+Normal), (Healing+Defensive), (Transform+Aggressive) ]")
@@ -130,88 +84,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-#       ◦ takes a list of opponents in the tournament; each opponent is defined as a
-#        tuple consisting of a CreatureFactory and a BattleStrategy.
-#       ◦ makes each opponent fight once all other opponents.
-#       ◦ organizes each fight using each Creature’s associated strategy.
-#       ◦ handles correctly invalid Creature-strategy tuples
-
-
-# Tournament 0 (basic)
-# [ (Flameling+Normal), (Healing+Defensive) ]
-# *** Tournament ***
-# 2 opponents involved
-
-# * Battle *
-# Flameling is a Fire type Creature
-# vs.
-# Sproutling is a Grass type Creature
-# now fight!
-# Flameling uses Ember!
-# Sproutling uses Vine Whip!
-# Sproutling heals itself for a small amount
-
-# Tournament 1 (error)
-# [ (Flameling+Aggressive), (Healing+Defensive) ]
-# *** Tournament ***
-# 2 opponents involved
-
-# * Battle *
-# Flameling is a Fire type Creature
-# vs.
-# Sproutling is a Grass type Creature
-# now fight!
-# Battle error, aborting tournament: Invalid Creature 'Flameling' for this aggressive strategy
-
-# Tournament 2 (multiple)
-# [ (Aquabub+Normal), (Healing+Defensive), (Transform+Aggressive) ]
-# *** Tournament ***
-# 3 opponents involved
-
-# * Battle *
-# Aquabub is a Water type Creature
-# vs.
-# Sproutling is a Grass type Creature
-# now fight!
-# Aquabub uses Water Gun!
-# Sproutling uses Vine Whip!
-# Sproutling heals itself for a small amount
-
-# * Battle *
-# Aquabub is a Water type Creature
-# vs.
-# Shiftling is a Normal type Creature
-# now fight!
-# Aquabub uses Water Gun!
-# Shiftling shifts into a sharper form!
-# Shiftling performs a boosted strike!
-# Shiftling returns to normal.
-
-# * Battle *
-# Sproutling is a Grass type Creature
-# vs.
-# Shiftling is a Normal type Creature
-# now fight!
-# Sproutling uses Vine Whip!
-# Sproutling heals itself for a small amount
-# Shiftling shifts into a sharper form!
-# Shiftling performs a boosted strike!
-# Shiftling returns to normal.
-
-# POUR TEST
-# print(f"{normal_strategy.act(flameling)}")
-# print(f"{aggressive_strategy.act(flameling)}")
-# print(f"{defensive_strategy.act(flameling)}\n")
-
-# print(f"{normal_strategy.act(aquabub)}")
-# print(f"{aggressive_strategy.act(aquabub)}")
-# print(f"{defensive_strategy.act(aquabub)}\n")
-
-# print(f"{normal_strategy.act(sproutling)}")
-# print(f"{aggressive_strategy.act(sproutling)}")
-# print(f"{defensive_strategy.act(sproutling)}\n")
-
-# print(f"{normal_strategy.act(shiftling)}")
-# print(f"{aggressive_strategy.act(shiftling)}")
-# print(f"{defensive_strategy.act(shiftling)}\n")
