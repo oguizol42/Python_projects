@@ -1,4 +1,7 @@
+import sys
+
 try:
+    print(f"Python executable: {sys.executable}")
     print("LOADING STATUS: Loading programs...\n")
 
     print("Checking dependencies:")
@@ -31,9 +34,9 @@ try:
     print("Results saved to: matrix_analysis.png")
 except ImportError as e:
     print(e)
-    print("\nTo installing with pip, run:")
+    print("\nTo install with pip, run:")
     print("pip install -r requirements.txt")
     print("python3 loading.py")
-    print("\nTo installing with Poetry, run:")
+    print("\nTo install with Poetry, run:")
     print("poetry install")
     print("poetry run python loading.py")
