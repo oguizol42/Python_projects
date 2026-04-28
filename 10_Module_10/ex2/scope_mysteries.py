@@ -15,6 +15,7 @@ def mage_counter() -> Callable:
 def spell_accumulator(initial_power: int) -> Callable:
     """Power Accumulator"""
     total = initial_power
+
     def accumulator(to_add: int) -> int:
         nonlocal total
         total = to_add + total
