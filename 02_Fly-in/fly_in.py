@@ -1,13 +1,4 @@
-from pydantic import BaseModel, Field, ValidationError, model_validator
-from typing import Optional
-from enum import Enum
-
-
-class Colors(str, Enum):
-    green = "green"
-    yellow = "yellow"
-    red = "red"
-    gray = "gray"
+import parsing
 
 
 class Drone_Map:
@@ -34,63 +25,6 @@ class Drone_Map:
             print(self.map_text)
         except AttributeError as e:
             print(e)
-
-    # Voir ci possible de faire une classe parsing dans la classe Drone_Map
-    # pour recuperer des donnees valides
-    class CheckMap(BaseModel):
-        """Check Every Variables which Define Map"""
-
-        # destination: str = Field(min_length=3, max_length=50)
-        # duration_days: int = Field(ge=1, le=3650)
-
-        nb_drones: int
-        start_hub: tuple[str, int, int, Optional[Colors]]
-        end_hub: tuple[str, int, int, Optional[Colors]]
-        zone_list: list[tuple[str, int, int, Optional[str], Optional[Colors]]]
-
-        @model_validator(mode="after")
-        def map_validation_rules(self) -> "CheckMap":
-            name_list: list[str] = []
-
-            # check numer of drones
-            if not self.nb_drones > 0:
-                raise ValueError("There are not enough drones")
-
-            # check zones
-            name_list.append(self.start_hub[0])
-            if self.end_hub[0] in name_list:
-                raise ValueError(
-                    f"The name: '{self.end_hub[0]}' is already exist"
-                )
-            name_list.append(self.end_hub[0])
-
-            return self
-
-    def parse_map(self) -> bool:
-        """Check File Content"""
-        if self.map_text is None:
-            return False
-        return True
-
-
-# The input file must respect the expected structure and syntax:
-# • The first line must define the number of drones using nb_drones: <positive_integer>.
-# • The program must be able to handle any number of drones.
-# • There must be exactly one start_hub: zone and one end_hub: zone.
-# • Each zone must have a unique name and valid integer coordinates.
-# • Zone names can use any valid characters but dashes and spaces.
-# • Connections must link only previously defined zones using connection: <zone1>-<zone2>
-# [metadata].
-# • The same connection must not appear more than once (e.g., a-b and b-a are con-
-# sidered duplicates).
-# • Any metadata block (e.g., [zone=... color=...] for zones, [max_link_capacity=...]
-# for connections) must be syntactically valid.
-# • Zone types must be one of: normal, blocked, restricted, priority. Any invalid
-# type must raise a parsing error.
-# • Capacity values (max_drones for zones, max_link_capacity for connections) must
-# be positive integers.
-# • Any other parsing error must stop the program and return a clear error message
-# indicating the line and cause
 
 
 # Map File Loading
