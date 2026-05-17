@@ -26,7 +26,7 @@ class Colors(str, Enum):
 #     - Des caracteres valides
 #     - Ne comporter aucun trait ni espace
 # * Chaque zone doit:
-#     - avoir des coordonnes valides (superieur ou egal a 0)
+#     - avoir des coordonnes valides (integer superieur ou egal a 0)
 #     - metadata: [zone=... color=...]
 #         color = None par defaut
 #         zone = normal par defaut
