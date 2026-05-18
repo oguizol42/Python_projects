@@ -67,6 +67,12 @@ class Drone_Map:
         # 4/ verifier si les datas presents correspondent a leur variable attribue suivant leur nom
         # 5/ verifier, par une base model, si les metatadas sont valides
         # 6/ Creer les variables maps definitives
+    def check_datas_format(str) -> tuple[str, str, str, Optional[str]]:
+        """Check Datas Format"""
+        # 1/ Si juste metadata -> None
+        # 2/ Split "[" (metadata)
+        # 3/ Si metadata ne fini pas par "]" -> None
+
 
     def parse_map(self) -> bool:
         """Check File Content"""
@@ -76,6 +82,12 @@ class Drone_Map:
         tuple_tempo: tuple[str, str]
         list_data_check: list[str] = []
 
+        nb_drones: str
+        start_hub: tuple [str, str, str, Optional[str]]
+        end_hub: tuple [str, str, str, Optional[str]]
+        hub: list [tuple [str, str, str, Optional[str]]]
+        connection: list [tuple [str, str, str, Optional[str]]]
+
         # 1/ Verifier si une map est chargee: self.map_text ne doit pas etre None
         # Check if map is charged
         if self.map_text is None:
@@ -84,6 +96,7 @@ class Drone_Map:
         # 2/ Enlever toutes les lignes ou morceau de ligne commencant par # (ce sont des commentaires)
         # Clean map datas
         map_list = self.map_text.split("\n")
+        print(f"map_list:\n{map_list}")
         for one_line in map_list:
             str_tempo = one_line.split("#")
             if len(str_tempo[0]) > 1:
@@ -97,7 +110,7 @@ class Drone_Map:
         tuple_tempo = map_list_clean[0].split(":")
         if len(tuple_tempo) < 2 or tuple_tempo[0] != "nb_drones":
             return False
-        nb_drones: str = tuple_tempo[1]
+        nb_drones = tuple_tempo[1]
         list_data_check.append(tuple_tempo[0])
 
         # 4/ Pour chaque ligne recuperer dans des variables temporaires:
@@ -124,6 +137,8 @@ class Drone_Map:
                 return False
             if tuple_tempo[0] == "start_hub" or tuple_tempo[0] == "end_hub":
                 list_data_check.append(tuple_tempo[0])
+            
+
 
         # 5/ Check des donnees recuperees dans un BaseModel
         # 6/ Check des metadata dans un basemodel dedie
