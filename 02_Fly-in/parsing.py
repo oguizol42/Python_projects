@@ -4,7 +4,8 @@ from enum import Enum
 
 # PARSING
 
-class MapParsing():
+
+class MapParsing:
     """Parsing Map Datas"""
 
     def __init__(self, map_text: str = None) -> None:
@@ -16,7 +17,6 @@ class MapParsing():
         red = "red"
         gray = "gray"
 
-
     class DatasType(str, Enum):
         nb_drones = "nb_drones"
         start_hub = "start_hub"
@@ -24,54 +24,19 @@ class MapParsing():
         hub = "hub"
         connection = "connection"
 
-    # * Verifier premiere ligne, elle doit etres ecrite comme suit: using nb_drones: <positive_integer>
+    def check_hub(self, hub_str: str) -> bool:
+        """Checking Hub elements"""
+        return True
 
-    # * Tout nombre de drones doit etre gerable:
-    #     - nombre negatif: Quantity of <nb_drones> drone is not correct
-    #     - 0: With a quantity of 0 drone, nothing happend
+    def check_connection(self, connection_str: str) -> bool:
+        """Checking Hub elements"""
+        return True
 
-    # * Presence d'exactement:
-    #     - 1 start_hub: zone
-    #     - 1 end_hub: zone
-    # * Chaque nom de zone doit:
-    #     - Avoir un nom unique
-    #     - Des caracteres valides
-    #     - Ne comporter aucun trait ni espace
-    # * Chaque zone doit:
-    #     - avoir des coordonnes valides (integer superieur ou egal a 0)
-    #     - metadata: [zone=... color=...]
-    #         color = None par defaut
-    #         zone = normal par defaut
-    #     -  Zone types must be one of: normal, blocked, restricted, priority. Any invalid
-    #             type must raise a parsing error.
-
-    # * connection: <zone1>-<zone2> [metadata]
-    #     - metadata: [max_link_capacity=...]
-    #     - max_link_capacity = 1 par defaut
-    # * une meme connection ne doit apparaitre qu'une fois:
-    #     connection: a-b et connection: b-a sont identiques
-
-    class CheckMap(BaseModel):
-        """Check Every Variables which Define Map"""
-
-    def parse_metadata(self) -> bool:
-        """check Metadata"""
-        pass
-        # 1/ Pour chaque variable de map, tranformer les metadata en tuple[str, str]
-        # 2/ Verifier si le nombre de tuple present est coherent
-        # 3/ Verifier si il n'a pas plusieurs metadata pour le meme type de data
-        # 4/ verifier si les datas presents correspondent a leur variable attribue suivant leur nom
-        # 5/ verifier, par une base model, si les metatadas sont valides
-        # 6/ Creer les variables maps definitives
-    def check_datas_format(str) -> tuple[str, str, str, Optional[str]]:
-        """Check Datas Format"""
-        # 1/ Si juste metadata -> None
-        # 2/ Split "[" (metadata)
-        # 3/ Si metadata ne fini pas par "]" -> None
-
-
-    def parse_map(self) -> bool:
+    def map_parsing(self) -> bool:
         """Check File Content"""
+        map_list_tuple: list = []
+        meta_tuple_str: tuple[str, Optional[str], Optional[str]] = []
+
         map_list: list[str] = []
         map_list_clean: list[str] = []
         tuple_tempo: tuple[str, str]
@@ -79,21 +44,19 @@ class MapParsing():
         list_data_check: list[str] = []
 
         nb_drones_str: str
-        hub: tuple [str, str, str, Optional[str]]
-        start_hub: tuple [str, str, str, Optional[str]]
-        end_hub: tuple [str, str, str, Optional[str]]
-        hub_list: list [tuple [str, str, str, Optional[str]]]
-        connection: list [tuple [str, str, str, Optional[str]]]
+        hub_str: tuple[
+            str,
+            str,
+            str,
+            Optional[tuple[str, Optional[str], Optional[str], Optional[str]]],
+        ]
+        start_hub_str: tuple[str, str, str, Optional[str]]
+        end_hub_str: tuple[str, str, str, Optional[str]]
+        hub_list_str: list[tuple[str, str, str, Optional[str]]]
+        connection_str: list[tuple[str, str, str, Optional[str]]]
 
-        # 1/ Verifier si une map est chargee: self.map_text ne doit pas etre None
-        # Check if map is charged
-        if self.map_text is None:
-            return False
-
-        # 2/ Enlever toutes les lignes ou morceau de ligne commencant par # (ce sont des commentaires)
         # Clean map datas
         map_list = self.map_text.split("\n")
-        print(f"map_list:\n{map_list}")
         for one_line in map_list:
             tuple_tempo = one_line.split("#")
             if len(tuple_tempo[0]) > 1:
@@ -101,94 +64,51 @@ class MapParsing():
         if len(map_list_clean) < 6:
             return False
 
-        # 3/ Verifier si premiere ligne:
-        #    using nb_drones: <donnee>
-        # Check first line
-        tuple_tempo = map_list_clean[0].split(":")
-        if len(tuple_tempo) < 2 or tuple_tempo[0] != "nb_drones":
-            return False
-        nb_drones_str = tuple_tempo[1]
-        list_data_check.append(tuple_tempo[0])
+        for i in range(len(map_list_clean)):
+            tuple_tempo_datas = map_list_clean[i].split(":")
 
-        # 4/ Pour chaque ligne recuperer dans des variables temporaires:
-        #   - nb_drones:  <donnee>                              -> str
-        #   - start_hub: <name> <x> <y> [metadata]              -> tuple [str, str, str, Optional[str]]
-        #   - end_hub: <name> <x> <y> [metadata]                -> tuple [str, str, str, Optional[str]]
-        #   - hub: <name> <x> <y> [metadata]                    -> list [tuple [str, str, str, Optional[str]]]
-        #   - connection: <name1>-<name2> [metadata]            -> list [tuple [str, str, Optional[str]]]
-        for i in range(1, len(map_list_clean)):
-            tuple_tempo = map_list_clean[i].split(":")
-
-            # Data Type Check
-            if len(tuple_tempo) < 2 or tuple_tempo[1] in list_data_check:
+            if not len(tuple_tempo_datas) == 2:
                 return False
+            elif i == 0 and not tuple_tempo_datas[0] == "nb_drones":
+                return False
+            elif i > 0 and tuple_tempo_datas[0] == "nb_drones":
+                return False
+            # elif tuple_tempo_datas[0] not in self.DatasType:
+            #     return False
+
+            # Recup meta
+            tuple_tempo_datas = map_list_clean[i].split("]")
+            if len(tuple_tempo_datas) == 2:
+                tuple_tempo_datas = tuple_tempo_datas[0].split("[")
+                meta_tuple = tuple_tempo_datas[1].split(" ")
+
+            tuple_tempo_datas = tuple_tempo_datas[0].split(" ")
+
+            # Recup number of drones
+            if i == 0:
+                nb_drones_str = tuple_tempo_datas[1]
+                continue
+
+            # Recup type
+            if tuple_tempo_datas[0] == "connection:":
+                if self.check_connection(tuple_tempo_datas[1]) is False:
+                    return False
             elif (
-                tuple_tempo[0] == "start_hub"
-                and tuple_tempo[0] in list_data_check
+                tuple_tempo_datas[0] == "start_hub:"
+                or tuple_tempo_datas[0] == "end_hub:"
+                or tuple_tempo_datas[0] == "hub:"
             ):
-                return False
-            elif (
-                tuple_tempo[0] == "end_hub"
-                and tuple_tempo[0] in list_data_check
-            ):
-                return False
-            elif tuple_tempo[0] == "nb_drones":
-                return False
-            elif not tuple_tempo[0] in self.DatasType:
+                if self.check_hub(tuple_tempo_datas[1]) is False:
+                    return False
+            else:
                 return False
 
-            # Data Basic Check
-            tuple_tempo_datas = tuple_tempo[1].split(" ")
-            if len(tuple_tempo_datas) < 2:
-                return False
+            print(f"type: {tuple_tempo_datas[0]}")
 
-            # if tuple_tempo[0] == "start_hub" or tuple_tempo[0] == "end_hub":
-            #     list_data_check.append(tuple_tempo[0])
-            #     if tuple_tempo[0] == "start_hub":
-            #         start_hub = (tuple_tempo[0], tuple_tempo[1])
-            #     if tuple_tempo[0] == "end_hub":
-            #         end_hub = (tuple_tempo[0], tuple_tempo[1])
-
-            
-
-
-        # 5/ Check des donnees recuperees dans un BaseModel
-        # 6/ Check des metadata dans un basemodel dedie
-
-    # class CheckMap(BaseModel):
-    #     """Check Every Variables which Define Map"""
-
-    #     # destination: str = Field(min_length=3, max_length=50)
-    #     # duration_days: int = Field(ge=1, le=3650)
-
-    #     nb_drones: int
-    #     start_hub: tuple[str, int, int, Optional[Colors]]
-    #     end_hub: tuple[str, int, int, Optional[Colors]]
-    #     zone_list: list[tuple[str, int, int, Optional[str], Optional[Colors]]]
-
-    #     @model_validator(mode="after")
-    #     def map_validation_rules(self) -> "CheckMap":
-    #         name_list: list[str] = []
-
-    #         # check numer of drones
-    #         if not self.nb_drones > 0:
-    #             raise ValueError("There are not enough drones")
-
-    #         # check zones
-    #         name_list.append(self.start_hub[0])
-    #         if self.end_hub[0] in name_list:
-    #             raise ValueError(
-    #                 f"The name: '{self.end_hub[0]}' is already exist"
-    #             )
-    #         name_list.append(self.end_hub[0])
-
-    #         return self
-
-    # def parse_map(self) -> bool:
-    #     """Check File Content"""
-    #     if self.map_text is None:
-    #         return False
-    #     return True
+        # TEST
+        print(f"\nmap_list: \n{map_list}")
+        print(f"\nmap_list_clean: \n{map_list_clean}")
+        print(f"\nnb_drones_str: {nb_drones_str}")
 
     # The input file must respect the expected structure and syntax:
     # • The first line must define the number of drones using nb_drones: <positive_integer>.

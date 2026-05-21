@@ -1,4 +1,5 @@
 import parsing
+
 # from pydantic import BaseModel, Field, ValidationError, model_validator
 # from typing import Optional
 # from enum import Enum
@@ -19,7 +20,6 @@ class Drone_Map(parsing.MapParsing):
             print(e)
         except IsADirectoryError as e:
             print(e)
-
 
     def display_map(self) -> None:
         """Display Graphical Map from File"""
@@ -69,7 +69,7 @@ def main() -> None:
     print()
     test_map.loading_map()
     print()
-    test_map.parse_map()
+    test_map.map_parsing()
     test_map.display_map()
 
     print()
