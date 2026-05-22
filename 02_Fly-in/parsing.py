@@ -27,21 +27,27 @@ class MapParsing:
     def check_hub(self, hub_str: str) -> bool:
         """Checking Hub elements"""
         return True
+        # hub: corridorA 4 3 [zone=priority color=green max_drones=2]
+
 
     def check_connection(self, connection_str: str) -> bool:
         """Checking Hub elements"""
+        if connection_str in self.list_data_check:
+            return False
+        self.list_data_check.append(connection_str)
         return True
+        # connection: corridorA-tunnelB [max_link_capacity=2]
 
     def map_parsing(self) -> bool:
         """Check File Content"""
         map_list_tuple: list = []
-        meta_tuple_str: tuple[str, Optional[str], Optional[str]] = []
+        meta_tuple_str: tuple[str, Optional[str], Optional[str]] = ()
 
         map_list: list[str] = []
         map_list_clean: list[str] = []
-        tuple_tempo: tuple[str, str]
-        tuple_tempo_datas: tuple[str, str]
-        list_data_check: list[str] = []
+        tuple_tempo: tuple[str, str] = ()
+        tuple_tempo_datas: tuple[str, str] = ()
+        self.list_data_check: list[str] = []
 
         nb_drones_str: str
         hub_str: tuple[
@@ -77,9 +83,10 @@ class MapParsing:
             #     return False
 
             # Recup meta
-            tuple_tempo_datas = map_list_clean[i].split("]")
+            tuple_tempo_datas = tuple_tempo_datas[0].split("[")
             if len(tuple_tempo_datas) == 2:
-                tuple_tempo_datas = tuple_tempo_datas[0].split("[")
+                if len(tuple_tempo_datas[1].split("]")) == 1:
+                    return False
                 meta_tuple = tuple_tempo_datas[1].split(" ")
 
             tuple_tempo_datas = tuple_tempo_datas[0].split(" ")
