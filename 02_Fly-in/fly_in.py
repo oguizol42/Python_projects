@@ -80,3 +80,12 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+# Map File Loading      "fly_in.py"
+# Map Parsing           "parsyng.py"
+# Create Drones         "fly_in.py"
+# Exectute Algorythm    "fly_in.py"
+# Display               "display.py"
+
+# Programs test

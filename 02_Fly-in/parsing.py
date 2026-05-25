@@ -4,134 +4,144 @@ from enum import Enum
 
 # PARSING
 
+# Fichier Exemple:
+
+# nb_drones: 5
+
+# start_hub: hub 0 0 [color=green]
+# end_hub: goal 10 10 [color=yellow]
+# hub: roof1 3 4 [zone=restricted color=red]
+# hub: roof2 6 2 [zone=normal color=blue]
+# hub: corridorA 4 3 [zone=priority color=green max_drones=2]
+# hub: tunnelB 7 4 [zone=normal color=red]
+# hub: obstacleX 5 5 [zone=blocked color=gray]
+# connection: hub-roof1
+# connection: hub-corridorA
+# connection: roof1-roof2
+# connection: roof2-goal
+# connection: corridorA-tunnelB [max_link_capacity=2]
+# connection: tunnelB-goal
+
+
+# • The first line defines the number of drones using nb_drones: <number>.
+# • Zone definition on each line using type prefixes:
+# ◦ start_hub: <name> <x> <y> [metadata] marks the starting zone.
+# ◦ end_hub: <name> <x> <y> [metadata] marks the end zone.
+# ◦ hub: <name> <x> <y> [metadata] defines a regular zone.
+# ◦ The connection syntax forbids dashes in zone names (see below).
+# • All metadata is optional and enclosed in brackets [...] with default values:
+# ◦ zone=<type> (default: normal)
+# ◦ color=<value> (default: none)
+# ◦ max_drones=<number> (default: 1) - Maximum drones that can occupy this
+# zone simultaneously
+# ◦ Tags inside brackets can appear in any order.
+# • Zone types:
+# 9
+# Fly-in Drones are interesting.
+# ◦ normal – Standard zone with 1 turn movement cost (default)
+# ◦ blocked – Inaccessible zone. Drones must not enter or pass through this zone.
+# Any path using it is invalid.
+# ◦ restricted – A sensitive or dangerous zone. Movement to this zone costs 2
+# turns.
+# ◦ priority – A preferred zone. Movement to this zone costs 1 turn but should
+# be prioritized in pathfinding.
+# • Colors:
+# ◦ Colors are optional and can be used for visual representation (terminal output
+# or graphical display).
+# ◦ Accepted values for color are any valid single-word strings (e.g., red, blue,
+# gray). There is no fixed list of allowed colors.
+# ◦ When colors are specified, the implementation should provide visual feedback
+# through colored terminal output or graphical representation.
+# • Connections are defined using connection: <name1>-<name2> [metadata]:
+# ◦ Define a bidirectional connection (edge) between two zones.
+# ◦ The connection syntax forbids dashes in zone names.
+# ◦ Optional metadata can be specified in brackets [...]:
+# ∗ max_link_capacity=<number> (default: 1) - Maximum drones that can
+# traverse this connection simultaneously
+# • Comments start with ’#’ and are ignored.
+
+
+# The input file must respect the expected structure and syntax:
+# • The first line must define the number of drones using nb_drones: <positive_integer>.
+# • The program must be able to handle any number of drones.
+# • There must be exactly one start_hub: zone and one end_hub: zone.
+# • Each zone must have a unique name and valid integer coordinates.
+# • Zone names can use any valid characters except dashes and spaces.
+# • Connections must link only previously defined zones using connection: <zone1>-<zone2>
+# [metadata].
+# • The same connection must not appear more than once (e.g., a-b and b-a are con-
+# sidered duplicates).
+# • Any metadata block (e.g., [zone=... color=...] for zones, [max_link_capacity=...]
+# for connections) must be syntactically valid.
+# • Zone types must be one of: normal, blocked, restricted, priority. Any invalid
+# type must raise a parsing error.
+# • Capacity values (max_drones for zones, max_link_capacity for connections) must
+# be positive integers.
+# • Any other parsing error must stop the program and return a clear error message
+# indicating the line and cause.
+
 
 class MapParsing:
-    """Parsing Map Datas"""
-
-    def __init__(self, map_text: str = None) -> None:
-        self.map_text = map_text
-
-    class Colors(str, Enum):
-        green = "green"
-        yellow = "yellow"
-        red = "red"
-        gray = "gray"
-
-    class DatasType(str, Enum):
-        nb_drones = "nb_drones"
-        start_hub = "start_hub"
-        end_hub = "end_hub"
-        hub = "hub"
-        connection = "connection"
-
-    def check_hub(self, hub_str: str) -> bool:
-        """Checking Hub elements"""
-        return True
-        # hub: corridorA 4 3 [zone=priority color=green max_drones=2]
+    def __init__(self) -> None:
+        pass
 
 
-    def check_connection(self, connection_str: str) -> bool:
-        """Checking Hub elements"""
-        if connection_str in self.list_data_check:
-            return False
-        self.list_data_check.append(connection_str)
-        return True
-        # connection: corridorA-tunnelB [max_link_capacity=2]
+# A partir de self.map_text enlever tous les commentaires => def clean_map(self) -> None:
 
-    def map_parsing(self) -> bool:
-        """Check File Content"""
-        map_list_tuple: list = []
-        meta_tuple_str: tuple[str, Optional[str], Optional[str]] = ()
+# Checker chaque ligne:
+#   - premiere ligne: nb_drones: <number>
 
-        map_list: list[str] = []
-        map_list_clean: list[str] = []
-        tuple_tempo: tuple[str, str] = ()
-        tuple_tempo_datas: tuple[str, str] = ()
-        self.list_data_check: list[str] = []
+# Puis pour chaque ligne:
+#   - def check_type(self, str) -> str
+#       * Verifie si le type est correct
+#               => sinon raise
+#       * Si nb_drones ou start_hub deja utilise ou end_hub deja utilise
+#               => raise
+#       * Si start_hub ou end_hub
+#               => ajout dans liste des types deja utilises
+#       * retourn le type
 
-        nb_drones_str: str
-        hub_str: tuple[
-            str,
-            str,
-            str,
-            Optional[tuple[str, Optional[str], Optional[str], Optional[str]]],
-        ]
-        start_hub_str: tuple[str, str, str, Optional[str]]
-        end_hub_str: tuple[str, str, str, Optional[str]]
-        hub_list_str: list[tuple[str, str, str, Optional[str]]]
-        connection_str: list[tuple[str, str, str, Optional[str]]]
+# Si type pas connection
+#       => def check_name(self)
+#       => def check_hub(self, str)
+# Sinon
+#       => def check_datas_connection(self)
 
-        # Clean map datas
-        map_list = self.map_text.split("\n")
-        for one_line in map_list:
-            tuple_tempo = one_line.split("#")
-            if len(tuple_tempo[0]) > 1:
-                map_list_clean.append(tuple_tempo[0])
-        if len(map_list_clean) < 6:
-            return False
+#   - def check_name(self, str) -> None
+#       * Si type connection
+#           => fin de fonction
+#       * Si name contient un ou des tirets
+#           => raise
+#       * si name deja utilise (present dans la liste des name)
+#           => raise
+#       * ajout de name dans la liste des name
 
-        for i in range(len(map_list_clean)):
-            tuple_tempo_datas = map_list_clean[i].split(":")
+# start_hub: <name> <x> <y> [metadata]
+# end_hub: <name> <x> <y> [metadata]
+# hub: <name> <x> <y> [metadata]
+#       * [metadata] -> zone=<type> (default: normal)
+#           * normal – Standard zone with 1 turn movement cost (default)
+#           * blocked – Inaccessible zone. Drones must not enter or pass through this zone.
+#                       Any path using it is invalid.
+#           * restricted – A sensitive or dangerous zone. Movement to this zone costs 2
+#                       turns.
+#           * priority – A preferred zone. Movement to this zone costs 1 turn but should
+# be prioritized in pathfinding.
+#       * [metadata] -> color=<value> (default: none)
+#       * [metadata] -> max_drones=<number> (default: 1)
+#   - def check_hub(self, str)
 
-            if not len(tuple_tempo_datas) == 2:
-                return False
-            elif i == 0 and not tuple_tempo_datas[0] == "nb_drones":
-                return False
-            elif i > 0 and tuple_tempo_datas[0] == "nb_drones":
-                return False
-            # elif tuple_tempo_datas[0] not in self.DatasType:
-            #     return False
-
-            # Recup meta
-            tuple_tempo_datas = tuple_tempo_datas[0].split("[")
-            if len(tuple_tempo_datas) == 2:
-                if len(tuple_tempo_datas[1].split("]")) == 1:
-                    return False
-                meta_tuple = tuple_tempo_datas[1].split(" ")
-
-            tuple_tempo_datas = tuple_tempo_datas[0].split(" ")
-
-            # Recup number of drones
-            if i == 0:
-                nb_drones_str = tuple_tempo_datas[1]
-                continue
-
-            # Recup type
-            if tuple_tempo_datas[0] == "connection:":
-                if self.check_connection(tuple_tempo_datas[1]) is False:
-                    return False
-            elif (
-                tuple_tempo_datas[0] == "start_hub:"
-                or tuple_tempo_datas[0] == "end_hub:"
-                or tuple_tempo_datas[0] == "hub:"
-            ):
-                if self.check_hub(tuple_tempo_datas[1]) is False:
-                    return False
-            else:
-                return False
-
-            print(f"type: {tuple_tempo_datas[0]}")
-
-        # TEST
-        print(f"\nmap_list: \n{map_list}")
-        print(f"\nmap_list_clean: \n{map_list_clean}")
-        print(f"\nnb_drones_str: {nb_drones_str}")
-
-    # The input file must respect the expected structure and syntax:
-    # • The first line must define the number of drones using nb_drones: <positive_integer>.
-    # • The program must be able to handle any number of drones.
-    # • There must be exactly one start_hub: zone and one end_hub: zone.
-    # • Each zone must have a unique name and valid integer coordinates.
-    # • Zone names can use any valid characters but dashes and spaces.
-    # • Connections must link only previously defined zones using connection: <zone1>-<zone2>
-    # [metadata].
-    # • The same connection must not appear more than once (e.g., a-b and b-a are con-
-    # sidered duplicates).
-    # • Any metadata block (e.g., [zone=... color=...] for zones, [max_link_capacity=...]
-    # for connections) must be syntactically valid.
-    # • Zone types must be one of: normal, blocked, restricted, priority. Any invalid
-    # type must raise a parsing error.
-    # • Capacity values (max_drones for zones, max_link_capacity for connections) must
-    # be positive integers.
-    # • Any other parsing error must stop the program and return a clear error message
-    # indicating the line and cause
+# connection: <point A>-<point B> [metadata] -> syntax forbids dashes in zone names
+#       * [metadata] -> max_link_capacity=<number> (default: 1)
+#   - def normalise_connection(self) -> str,str => retourne une string contenant les donnees separeees d'un espace
+#                                               + une string contenant les metadonnees
+#                                              Fait un raise si probleme
+#   -def check_meta_connection(self, str) -> str => si meta coeherente retourne string avec juste la valeur meta
+#                                                sinon raise
+#   -def check_datas_connection(self) -> None => execute def normalise_connection()
+#                                             def check_meta_connection()
+#                                             analyse si connections correspondent a des zones existantes
+#                                             verifie si cette connection a deja ete creee avant (self.list_connections)
+#                                                   => raise si c'est le cas
+#                                                   => sinon ajout de cette connection et sa reciproque a self.list_connections
+#                                                      ajout des connections avec leur meta a chaque zones correspondantes
