@@ -61,21 +61,15 @@ class Manage_flies:
 
 
 def main() -> None:
-    test_map: Drone_Map = Drone_Map("maps/easy/01_linear_path.txt")
-    test_map2: Drone_Map = Drone_Map("maps/easy/01_linear_path2")
-    test_map3: Drone_Map = Drone_Map("maps/easy")
+    try:
+        map: Drone_Map = Drone_Map("maps/easy/01_linear_path.txt")
 
-    test_map.display_map()
-    print()
-    test_map.loading_map()
-    print()
-    test_map.map_parsing()
-    test_map.display_map()
+        map.loading_map()
+        map.map_parsing()
+        map.display_map()
 
-    print()
-    test_map2.loading_map()
-    print()
-    test_map3.loading_map()
+    except ValueError as e:
+        print(e)
 
 
 if __name__ == "__main__":

@@ -83,11 +83,49 @@ from enum import Enum
 
 class MapParsing:
     def __init__(self) -> None:
+        self.map_clean: list[str] = self.clean_map()
+        self.name_list: list[str] = []
+        self.coord_list: list[tuple[int, int]] = []
+        self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]]
+        self.connection_list: list[
+            tuple[MapParsing.ConnectionData, MapParsing.ConnectionMeta]
+        ]
+
+    # Recupere map_str sans les commentaires dans self.map_clean
+    #           => def clean_map(self, map_str) -> str:
+    def clean_map(self) -> None:
+        """Clean Map Datas"""
+        if self.map_text.split is None or self.map_text.split == []:
+            raise ValueError("No datas read")
+        map_list: list[str] = self.map_text.split("\n")
+        for one_line in map_list:
+            tuple_tempo = one_line.split("#")
+            if len(tuple_tempo[0]) > 1:
+                self.map_clean.append(tuple_tempo[0])
+        if len(self.map_clean) < 6:
+            self.map_clean = []
+            raise ValueError("Not enough values in the map definition")
+
+    class HubMeta(BaseModel):
+        pass
+
+    class HubData(BaseModel):
+        pass
+
+    class ConnectionMeta(BaseModel):
+        pass
+
+    class ConnectionData(BaseModel):
+        pass
+
+    def map_parsing(self) -> None:
         pass
 
 
-# A partir de self.map_text enlever tous les commentaires => def clean_map(self) -> None:
+# Recupere map_str sans les commentaires dans self.map_clean
+#           => def clean_map(self, map_str) -> str:
 
+# map_parsing(self)
 # Checker chaque ligne:
 #   - premiere ligne: nb_drones: <number>
 
@@ -99,22 +137,29 @@ class MapParsing:
 #               => raise
 #       * Si start_hub ou end_hub
 #               => ajout dans liste des types deja utilises
-#       * retourn le type
+#       * type: str = def check_type(self, ligne)
 
-# Si type pas connection
-#       => def check_name(self)
-#       => def check_hub(self, str)
-# Sinon
+#   Si type pas connection
+#        => def check_name(self, str)
+#           * si nom deja utilise (present dans self.name_list)
+#                   => raise
+#           * si nom contient tiret ou espaces
+#                   => raise
+#           * ajout du nom dans self.name_list
+#        => def check_meta_hub(self, str) -> str
+#           * si meta pas coeherente
+#                   => raise
+#        => def check_hub(self, str)
+#           * Si coordonnees ne sont pas des int positifs
+#               => sinon raise
+#           * Si coordonnees deja utilisees
+#               => raise
+#           * Ajout des coordonnees dans self.coord_list
+#           * Ajout du hub dans self.hub_list
+
+
+#   Sinon
 #       => def check_datas_connection(self)
-
-#   - def check_name(self, str) -> None
-#       * Si type connection
-#           => fin de fonction
-#       * Si name contient un ou des tirets
-#           => raise
-#       * si name deja utilise (present dans la liste des name)
-#           => raise
-#       * ajout de name dans la liste des name
 
 # start_hub: <name> <x> <y> [metadata]
 # end_hub: <name> <x> <y> [metadata]
@@ -136,8 +181,9 @@ class MapParsing:
 #   - def normalise_connection(self) -> str,str => retourne une string contenant les donnees separeees d'un espace
 #                                               + une string contenant les metadonnees
 #                                              Fait un raise si probleme
-#   -def check_meta_connection(self, str) -> str => si meta coeherente retourne string avec juste la valeur meta
-#                                                sinon raise
+#   -def check_meta_connection(self, str) -> str
+#       * si meta pas coeherente
+#           => raise
 #   -def check_datas_connection(self) -> None => execute def normalise_connection()
 #                                             def check_meta_connection()
 #                                             analyse si connections correspondent a des zones existantes
@@ -145,3 +191,5 @@ class MapParsing:
 #                                                   => raise si c'est le cas
 #                                                   => sinon ajout de cette connection et sa reciproque a self.list_connections
 #                                                      ajout des connections avec leur meta a chaque zones correspondantes
+
+# FAIRE DES CLASSES DEFINISSANT LES METAS
