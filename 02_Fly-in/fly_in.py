@@ -5,30 +5,52 @@ import parsing
 # from enum import Enum
 
 
+# class Drone_Map(parsing.MapParsing):
+#     def __init__(self, file_name: str) -> None:
+#         self.file_name = file_name
+#         self.map_text: str = None
+
+#     def loading_map(self) -> None:
+#         """Loading Map from File"""
+#         try:
+#             fd: int = open(self.file_name, "r")
+#             self.map_text: str = fd.read()
+#             fd.close()
+#         except FileNotFoundError as e:
+#             print(e)
+#         except IsADirectoryError as e:
+#             print(e)
+
+#     def display_map(self) -> None:
+#         """Display Graphical Map from File"""
+#         try:
+#             if self.map_text is None:
+#                 raise AttributeError("No Map Loaded")
+#             print(self.map_text)
+#         except AttributeError as e:
+#             print(e)
+
 class Drone_Map(parsing.MapParsing):
     def __init__(self, file_name: str) -> None:
         self.file_name = file_name
         self.map_text: str = None
+        super().__init__()
 
     def loading_map(self) -> None:
         """Loading Map from File"""
-        try:
-            fd: int = open(self.file_name, "r")
-            self.map_text: str = fd.read()
-            fd.close()
-        except FileNotFoundError as e:
-            print(e)
-        except IsADirectoryError as e:
-            print(e)
+        fd: int = open(self.file_name, "r")
+        self.map_text: str = fd.read()
+        fd.close()
 
     def display_map(self) -> None:
         """Display Graphical Map from File"""
-        try:
-            if self.map_text is None:
-                raise AttributeError("No Map Loaded")
-            print(self.map_text)
-        except AttributeError as e:
-            print(e)
+        if self.map_text is None:
+            raise AttributeError("No Map Loaded")
+        print(self.map_text)
+        if self.map_clean is None or self.map_clean == []:
+            raise AttributeError("Map is not Cleaned")
+        print()
+        print(self.map_clean)
 
 
 # Map File Loading

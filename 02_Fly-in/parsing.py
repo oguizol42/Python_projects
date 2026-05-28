@@ -83,8 +83,9 @@ from enum import Enum
 
 class MapParsing:
     def __init__(self) -> None:
-        self.map_clean: list[str] = self.clean_map()
-        self.name_list: list[str] = []
+        self.map_clean: list[str] = []
+        self.types_used: list[str] = []
+        self.name_used: list[str] = []
         self.coord_list: list[tuple[int, int]] = []
         self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]]
         self.connection_list: list[
@@ -95,7 +96,7 @@ class MapParsing:
     #           => def clean_map(self, map_str) -> str:
     def clean_map(self) -> None:
         """Clean Map Datas"""
-        if self.map_text.split is None or self.map_text.split == []:
+        if self.map_text is None or self.map_text == []:
             raise ValueError("No datas read")
         map_list: list[str] = self.map_text.split("\n")
         for one_line in map_list:
@@ -105,6 +106,13 @@ class MapParsing:
         if len(self.map_clean) < 6:
             self.map_clean = []
             raise ValueError("Not enough values in the map definition")
+
+    class DatasType(str, Enum):
+        nb_drones = "nb_drones"
+        start_hub = "start_hub"
+        end_hub = "end_hub"
+        hub = "hub"
+        connection = "connection"
 
     class HubMeta(BaseModel):
         pass
@@ -118,12 +126,66 @@ class MapParsing:
     class ConnectionData(BaseModel):
         pass
 
+    def check_type(self, line: str) -> str:
+        """Check and Return type or a raise"""
+        if line is None:
+            raise ValueError("There is no line in argument")
+        type_tuple: tuple[str , str] = line.split(":")
+        if len(type_tuple) != 2:
+            raise ValueError("There is no type argument identifiable")
+        if type_tuple[0] not in [c.value for c in MapParsing.DatasType]:
+            raise ValueError(f"'{type_tuple[0]}' is not correct type")
+        if type_tuple[0] in self.types_used:
+            raise ValueError(f"'{type_tuple[0]}' is used several times")
+
+        if type_tuple[0] == "nb_drones" or type_tuple[0] == "start_hub" or type_tuple[0] == "end_hub":
+            self.types_used.append(type_tuple[0])
+
+        return type_tuple[0]
+
     def map_parsing(self) -> None:
-        pass
+        """Parsing of All the Map"""
+        tuple_tempo: tuple
+        type: str = None
+        nb_drones_str: str
+
+
+
+        try:
+            self.clean_map()
+            for i in range(len(self.map_clean)):
+                type = self.check_type(self.map_clean[i])
+
+                # TEMPO
+                print(f"{i}: {type}")
+
+                if i == 0:
+                    # CHeck first line
+                    if not type == "nb_drones":
+                        raise ValueError(f"The first type is '{type}' but it should have been 'nb_drones'")
+                    tuple_tempo = self.map_clean[i].split(" ")
+                    if not len(tuple_tempo) == 2:
+                        raise ValueError(f"Definition of {type} is not valid")
+                    nb_drones_str = tuple_tempo[1]
+
+                    # TEMPO
+                    print(f"\nIl y a {nb_drones_str} drone(s)\n")
+
+                    continue
+                    
+
+            # check first line
+
+
+        except ValueError as e:
+            print(e)
 
 
 # Recupere map_str sans les commentaires dans self.map_clean
 #           => def clean_map(self, map_str) -> str:
+
+
+
 
 # map_parsing(self)
 # Checker chaque ligne:
@@ -135,8 +197,6 @@ class MapParsing:
 #               => sinon raise
 #       * Si nb_drones ou start_hub deja utilise ou end_hub deja utilise
 #               => raise
-#       * Si start_hub ou end_hub
-#               => ajout dans liste des types deja utilises
 #       * type: str = def check_type(self, ligne)
 
 #   Si type pas connection
