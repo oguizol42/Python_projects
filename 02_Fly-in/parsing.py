@@ -1,3 +1,4 @@
+from re import S
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from typing import Optional
 from enum import Enum
@@ -83,10 +84,14 @@ from enum import Enum
 
 class MapParsing:
     def __init__(self) -> None:
+        # For check
         self.map_clean: list[str] = []
         self.types_used: list[str] = []
         self.name_used: list[str] = []
         self.coord_list: list[tuple[int, int]] = []
+        self.connection_check_list: list[tuple[str, str]]
+
+        # Definitive Datas
         self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]]
         self.connection_list: list[
             tuple[MapParsing.ConnectionData, MapParsing.ConnectionMeta]
@@ -143,6 +148,90 @@ class MapParsing:
 
         return type_tuple[0]
 
+#        - def normalise_connection(self, line: str) -> str,str => retourne une string contenant les donnees separeees d'un espace
+#                                               + une string contenant les metadonnees
+#                                              Fait un raise si probleme
+#   -def check_meta_connection(self, meta: str) -> str
+#       * si meta pas coeherente
+#           => raise
+#   -def check_datas_connection(self, line: str) -> None => execute def normalise_connection(line)
+#                                             def check_meta_connection(meta)
+#                                             verifie si cette connection a deja ete creee avant (self.connection_str_list)
+#                                                   => raise si c'est le cas
+#                                                   => sinon ajout de cette connection et sa reciproque a self.list_connections
+#                                                      ajout des connections avec leur meta a chaque zones correspondantes
+#   -def check_connections_list(self) -> None: 
+#       => verifie si toutes les connections correspondent a des zones existantes sinon raise
+
+    def recup_datas_only(string: str) -> str:
+        """Return Datas String of a String"""
+        tuple_tempo: tuple
+
+        if string is None:
+            raise ValueError("There is no string in argument")
+        tuple_tempo = string.split(" [")
+        tuple_tempo = tuple_tempo[0].split(": ")
+        if len(tuple_tempo) != 2:
+            raise ValueError("String not conform")
+        
+        return tuple_tempo[1]
+        
+
+    def normalise_connection(self, line: str) -> tuple(str, str):
+        """Separate Datas and Metadatas in 2 Strings"""
+        tuple_tempo: tuple
+        datas: str
+        meta: str
+
+        tuple_tempo = line.split("[")
+        if len(tuple_tempo) > 2:
+            raise ValueError("Too many MetaDatas")
+        elif len(tuple_tempo) == 2:
+            tuple_tempo = tuple_tempo[1].split("]")
+            if len(tuple_tempo) != 2:
+                raise ValueError("Definition of MetaDatas is not conform")
+            meta = tuple_tempo[0]
+        else:
+            meta = "max_link_capacity=1"
+        datas = self.recup_datas_only(line)
+
+        return datas, meta
+
+
+    def check_meta_connection(self, meta: str) -> str:
+        """Check Meta Datas"""
+        pass
+
+    def check_datas_connection(self, line: str):
+        """Check Datas of Connections"""
+        tuple_tempo: tuple[str, str]
+        datas: str
+        meta: str
+        zone1: str
+        zone2: str
+
+        if line is None:
+            raise ValueError("There is no line in argument")
+
+        datas, meta = self.normalise_connection(line)
+        self.check_meta_connection(meta)
+
+        #Check if Valid Datas and Doublons
+        tuple_tempo = datas.split("-")
+        if len(tuple_tempo) != 2:
+            raise ValueError("Connection Datas are not valid")
+        if tuple_tempo in self.connection_check_list:
+            raise ValueError("There are doublons in Connection Datas")
+        self.connection_check_list.append(tuple_tempo)
+        self.connection_check_list.append((tuple_tempo[1], tuple_tempo[0]))
+
+        # A terminer (check metadata, ajout des donnes en BaseModel)
+        
+
+    def check_connections_list(self) -> None:
+        """Check if Each Connection Exist"""
+        pass
+
     def map_parsing(self) -> None:
         """Parsing of All the Map"""
         tuple_tempo: tuple
@@ -172,6 +261,9 @@ class MapParsing:
                     print(f"\nIl y a {nb_drones_str} drone(s)\n")
 
                     continue
+
+                if type == "connection":
+                    self.check_datas_connection(self.map_clean[i])                    
                     
 
             # check first line
@@ -184,9 +276,6 @@ class MapParsing:
 # Recupere map_str sans les commentaires dans self.map_clean
 #           => def clean_map(self, map_str) -> str:
 
-
-
-
 # map_parsing(self)
 # Checker chaque ligne:
 #   - premiere ligne: nb_drones: <number>
@@ -198,6 +287,9 @@ class MapParsing:
 #       * Si nb_drones ou start_hub deja utilise ou end_hub deja utilise
 #               => raise
 #       * type: str = def check_type(self, ligne)
+
+
+
 
 #   Si type pas connection
 #        => def check_name(self, str)
@@ -244,12 +336,12 @@ class MapParsing:
 #   -def check_meta_connection(self, str) -> str
 #       * si meta pas coeherente
 #           => raise
-#   -def check_datas_connection(self) -> None => execute def normalise_connection()
+#   -def check_datas_connection(self, line: str) -> None => execute def normalise_connection()
 #                                             def check_meta_connection()
 #                                             analyse si connections correspondent a des zones existantes
-#                                             verifie si cette connection a deja ete creee avant (self.list_connections)
+#                                             verifie si cette connection a deja ete creee avant (self.connection_str_list)
 #                                                   => raise si c'est le cas
-#                                                   => sinon ajout de cette connection et sa reciproque a self.list_connections
+#                                                   => sinon ajout de cette connection et sa reciproque a self.connection_str_list
 #                                                      ajout des connections avec leur meta a chaque zones correspondantes
 
 # FAIRE DES CLASSES DEFINISSANT LES METAS
