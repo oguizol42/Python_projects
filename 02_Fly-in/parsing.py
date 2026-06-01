@@ -89,13 +89,13 @@ class MapParsing:
         self.types_used: list[str] = []
         self.name_used: list[str] = []
         self.coord_list: list[tuple[int, int]] = []
-        self.connection_check_list: list[tuple[str, str]]
+        self.connection_check_list: list[tuple[str, str]] = []
 
         # Definitive Datas
-        self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]]
+        self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
         self.connection_list: list[
-            tuple[MapParsing.ConnectionData, MapParsing.ConnectionMeta]
-        ]
+            tuple[tuple[str, str], int]
+        ] = []
 
     # Recupere map_str sans les commentaires dans self.map_clean
     #           => def clean_map(self, map_str) -> str:
@@ -138,7 +138,7 @@ class MapParsing:
         type_tuple: tuple[str , str] = line.split(":")
         if len(type_tuple) != 2:
             raise ValueError("There is no type argument identifiable")
-        if type_tuple[0] not in [c.value for c in MapParsing.DatasType]:
+        if type_tuple[0] not in [c.value for c in self.DatasType]:
             raise ValueError(f"'{type_tuple[0]}' is not correct type")
         if type_tuple[0] in self.types_used:
             raise ValueError(f"'{type_tuple[0]}' is used several times")
@@ -148,22 +148,8 @@ class MapParsing:
 
         return type_tuple[0]
 
-#        - def normalise_connection(self, line: str) -> str,str => retourne une string contenant les donnees separeees d'un espace
-#                                               + une string contenant les metadonnees
-#                                              Fait un raise si probleme
-#   -def check_meta_connection(self, meta: str) -> str
-#       * si meta pas coeherente
-#           => raise
-#   -def check_datas_connection(self, line: str) -> None => execute def normalise_connection(line)
-#                                             def check_meta_connection(meta)
-#                                             verifie si cette connection a deja ete creee avant (self.connection_str_list)
-#                                                   => raise si c'est le cas
-#                                                   => sinon ajout de cette connection et sa reciproque a self.list_connections
-#                                                      ajout des connections avec leur meta a chaque zones correspondantes
-#   -def check_connections_list(self) -> None: 
-#       => verifie si toutes les connections correspondent a des zones existantes sinon raise
 
-    def recup_datas_only(string: str) -> str:
+    def recup_datas_only(self, string: str) -> str:
         """Return Datas String of a String"""
         tuple_tempo: tuple
 
@@ -171,17 +157,17 @@ class MapParsing:
             raise ValueError("There is no string in argument")
         tuple_tempo = string.split(" [")
         tuple_tempo = tuple_tempo[0].split(": ")
-        if len(tuple_tempo) != 2:
+        if not len(tuple_tempo) == 2:
             raise ValueError("String not conform")
         
         return tuple_tempo[1]
         
 
-    def normalise_connection(self, line: str) -> tuple(str, str):
+    def normalise_connection(self, line: str) -> tuple[str, str]:
         """Separate Datas and Metadatas in 2 Strings"""
         tuple_tempo: tuple
         datas: str
-        meta: str
+        meta: str = "max_link_capacity=1"
 
         tuple_tempo = line.split("[")
         if len(tuple_tempo) > 2:
@@ -191,46 +177,95 @@ class MapParsing:
             if len(tuple_tempo) != 2:
                 raise ValueError("Definition of MetaDatas is not conform")
             meta = tuple_tempo[0]
-        else:
-            meta = "max_link_capacity=1"
         datas = self.recup_datas_only(line)
 
         return datas, meta
 
 
-    def check_meta_connection(self, meta: str) -> str:
+    def check_connection_meta(self, meta: str) -> int:
         """Check Meta Datas"""
-        pass
+        tuple_tempo: tuple[str, str]
+        number: int
 
-    def check_datas_connection(self, line: str):
+        if meta is None or len(meta) == 0:
+            raise ValueError(f"No metadata given for checking")
+        tuple_tempo = meta.split("=")
+        if not len(tuple_tempo) == 2:
+            raise ValueError(f"{meta} don't have good quantites of datas")
+        elif not tuple_tempo[0] == "max_link_capacity":
+            raise ValueError(f"{tuple_tempo[0]} if not a conform metadata for connection")
+        number = int(tuple_tempo[1])
+        if number < 1:
+            raise ValueError(f"Connection {tuple_tempo[0]} cant't be have {number} of capacity")
+        return number        
+
+
+    def check_connection_datas(self, line: str) -> None:
         """Check Datas of Connections"""
         tuple_tempo: tuple[str, str]
         datas: str
         meta: str
+
         zone1: str
         zone2: str
+        qty_connections: int
 
         if line is None:
             raise ValueError("There is no line in argument")
 
         datas, meta = self.normalise_connection(line)
-        self.check_meta_connection(meta)
+        qty_connections = self.check_connection_meta(meta)
 
         #Check if Valid Datas and Doublons
-        tuple_tempo = datas.split("-")
-        if len(tuple_tempo) != 2:
+        tuple_tempo = tuple(datas.split("-"))
+        if not len(tuple_tempo) == 2:
             raise ValueError("Connection Datas are not valid")
         if tuple_tempo in self.connection_check_list:
-            raise ValueError("There are doublons in Connection Datas")
+            raise ValueError(f"{tuple_tempo} is a doublon in Connection Datas")
         self.connection_check_list.append(tuple_tempo)
         self.connection_check_list.append((tuple_tempo[1], tuple_tempo[0]))
-
-        # A terminer (check metadata, ajout des donnes en BaseModel)
+        self.connection_list.append((tuple_tempo, qty_connections))
         
 
     def check_connections_list(self) -> None:
         """Check if Each Connection Exist"""
+        for connection in self.connection_check_list:
+            if not connection[0] in self.name_used and not connection[1] in self.name_used:
+                raise ValueError(f"Connection {connection} does not exist")
+            elif not connection[0] in self.name_used:
+                raise ValueError(f"In connection {connection}: {connection[0]} does not exist")
+            elif not connection[1] in self.name_used:
+                raise ValueError(f"In connection {connection}: {connection[1]} does not exist")
+
+
+    def check_hub_name(self, str) -> None:
+        """Check if hub Name is Conform"""
         pass
+#           * si nom deja utilise (present dans self.name_list)
+#                   => raise
+#           * si nom contient tiret ou espaces
+#                   => raise
+#           * ajout du nom dans self.name_list
+    def check_hub_meta(self, str) -> None:
+        """Check if hub Meta is Conform"""
+        pass
+#           * si meta pas coeherente
+#                   => raise
+
+    def check_hub_datas(self, str) -> None:
+        """Check if hub Datas are Conform"""
+        pass
+#           * Si coordonnees ne sont pas des int positifs
+#               => sinon raise
+#           * Si coordonnees deja utilisees
+#               => raise
+#           * Ajout des coordonnees dans self.coord_list
+#           * Ajout du hub dans self.hub_list
+
+    def check_hub(self, str) -> None:
+        """Check hub"""
+        pass
+
 
     def map_parsing(self) -> None:
         """Parsing of All the Map"""
@@ -252,7 +287,7 @@ class MapParsing:
                     # CHeck first line
                     if not type == "nb_drones":
                         raise ValueError(f"The first type is '{type}' but it should have been 'nb_drones'")
-                    tuple_tempo = self.map_clean[i].split(" ")
+                    tuple_tempo = tuple(self.map_clean[i].split(" "))
                     if not len(tuple_tempo) == 2:
                         raise ValueError(f"Definition of {type} is not valid")
                     nb_drones_str = tuple_tempo[1]
@@ -263,10 +298,11 @@ class MapParsing:
                     continue
 
                 if type == "connection":
-                    self.check_datas_connection(self.map_clean[i])                    
+                    self.check_connection_datas(self.map_clean[i])                    
                     
 
-            # check first line
+            # check if every connections can existed
+            self.check_connections_list()
 
 
         except ValueError as e:
@@ -333,11 +369,11 @@ class MapParsing:
 #   - def normalise_connection(self) -> str,str => retourne une string contenant les donnees separeees d'un espace
 #                                               + une string contenant les metadonnees
 #                                              Fait un raise si probleme
-#   -def check_meta_connection(self, str) -> str
+#   -def check_connection_meta(self, str) -> str
 #       * si meta pas coeherente
 #           => raise
 #   -def check_datas_connection(self, line: str) -> None => execute def normalise_connection()
-#                                             def check_meta_connection()
+#                                             def check_connection_meta()
 #                                             analyse si connections correspondent a des zones existantes
 #                                             verifie si cette connection a deja ete creee avant (self.connection_str_list)
 #                                                   => raise si c'est le cas
