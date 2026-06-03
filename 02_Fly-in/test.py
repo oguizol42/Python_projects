@@ -46,8 +46,11 @@ def main() -> None:
         test_map.map_parsing()
     except ValueError as e:
         print(e)
+    except ValidationError as e:
+        print(e)
     print()
     displaying_map_settup_test(test_map)
+    print(f"\List of connections: {test_map.connection_list}")
 
     print("\nTESTING BY LOADED A FILE THAT NOT EXIST:")
     loading_test(test_map2)

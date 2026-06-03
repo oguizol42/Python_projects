@@ -123,7 +123,14 @@ class MapParsing:
         pass
 
     class HubData(BaseModel):
-        pass
+        name: str = Field(min_length=1)
+        coordX: int = Field(ge=0)
+        coordY: int = Field(ge=0)
+        @model_validator(mode="after")
+        def hub_datas_validation(self) -> "MapParsing.HubData":
+            if "-" in self.name or "_" in self.name or " " in self.name:
+                raise ValueError("The name must not countain: '-', '_' or ' '")
+            return self
 
     class ConnectionMeta(BaseModel):
         pass
@@ -161,22 +168,35 @@ class MapParsing:
             raise ValueError("String not conform")
         
         return tuple_tempo[1]
+    
+    def recup_meta_only(self, string: str) -> str:
+        """Return Metadata String of a String"""
+        tuple_tempo: tuple
+        meta: str = "[]"
+
+        if string is not None and not len(string) == 0:
+            tuple_tempo = string.split("[")
+            if len(tuple_tempo) > 2:
+                raise ValueError("Too many MetaDatas")
+            elif len(tuple_tempo) == 2:
+                tuple_tempo = tuple_tempo[1].split("]")
+                if len(tuple_tempo) != 2:
+                    raise ValueError("Definition of MetaDatas is not conform")
+                meta = tuple_tempo[0]
+
+        return meta
+    
         
 
     def normalise_connection(self, line: str) -> tuple[str, str]:
         """Separate Datas and Metadatas in 2 Strings"""
         tuple_tempo: tuple
         datas: str
-        meta: str = "max_link_capacity=1"
+        meta: str
 
-        tuple_tempo = line.split("[")
-        if len(tuple_tempo) > 2:
-            raise ValueError("Too many MetaDatas")
-        elif len(tuple_tempo) == 2:
-            tuple_tempo = tuple_tempo[1].split("]")
-            if len(tuple_tempo) != 2:
-                raise ValueError("Definition of MetaDatas is not conform")
-            meta = tuple_tempo[0]
+        meta = self.recup_meta_only(line)
+        if meta == "[]":
+            meta = "max_link_capacity=1"
         datas = self.recup_datas_only(line)
 
         return datas, meta
@@ -206,8 +226,6 @@ class MapParsing:
         datas: str
         meta: str
 
-        zone1: str
-        zone2: str
         qty_connections: int
 
         if line is None:
@@ -237,24 +255,34 @@ class MapParsing:
             elif not connection[1] in self.name_used:
                 raise ValueError(f"In connection {connection}: {connection[1]} does not exist")
 
-
-    def check_hub_name(self, str) -> None:
-        """Check if hub Name is Conform"""
-        pass
-#           * si nom deja utilise (present dans self.name_list)
-#                   => raise
-#           * si nom contient tiret ou espaces
-#                   => raise
-#           * ajout du nom dans self.name_list
-    def check_hub_meta(self, str) -> None:
+    def check_hub_meta(self, string: str) -> None:
         """Check if hub Meta is Conform"""
         pass
 #           * si meta pas coeherente
 #                   => raise
 
-    def check_hub_datas(self, str) -> None:
+    def check_hub_datas(self, string: str) -> "MapParsing.HubData":
         """Check if hub Datas are Conform"""
-        pass
+        datas_str: tuple = self.recup_datas_only(string)
+        datas: MapParsing.HubData
+
+        if not len(datas_str) == 3:
+            raise ValueError(f"{datas_str} is not conform, it must be countain 3 datas")
+        datas = MapParsing.HubData(
+            name=datas_str[0],
+            coordX=int(datas_str[1]),
+            coordY=int(datas_str[2])
+            )
+        if datas.name in self.name_used:
+            raise ValueError(f"This name: {datas.name} is already used")
+        if (datas.coordX, datas.coordX) in self.coord_list:
+            raise ValueError(f"Coordinates: {datas.coordX}, {datas.coordY} is already used")
+
+        self.name_used.append(datas.name)
+        self.coord_list.append(datas.name)
+
+        return datas
+# self.coord_list
 #           * Si coordonnees ne sont pas des int positifs
 #               => sinon raise
 #           * Si coordonnees deja utilisees
@@ -262,9 +290,12 @@ class MapParsing:
 #           * Ajout des coordonnees dans self.coord_list
 #           * Ajout du hub dans self.hub_list
 
-    def check_hub(self, str) -> None:
+    def check_hub(self, line: str) -> None:
         """Check hub"""
-        pass
+        # self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
+        datas: MapParsing.HubData = self.check_hub_datas(line)
+        # tester les meta
+        # ajouter le tout dans self.hub_list
 
 
     def map_parsing(self) -> None:
@@ -298,8 +329,12 @@ class MapParsing:
                     continue
 
                 if type == "connection":
-                    self.check_connection_datas(self.map_clean[i])                    
-                    
+                    self.check_connection_datas(self.map_clean[i])
+                else:
+                    self.check_hub(self.map_clean[i])
+
+        # TESTER CHECK HUB
+
 
             # check if every connections can existed
             self.check_connections_list()
