@@ -97,8 +97,6 @@ class MapParsing:
             tuple[tuple[str, str], int]
         ] = []
 
-    # Recupere map_str sans les commentaires dans self.map_clean
-    #           => def clean_map(self, map_str) -> str:
     def clean_map(self) -> None:
         """Clean Map Datas"""
         if self.map_text is None or self.map_text == []:
@@ -119,8 +117,29 @@ class MapParsing:
         hub = "hub"
         connection = "connection"
 
+    class Colors(str, Enum):
+        green = "green"
+        yellow = "yellow"
+        red = "red"
+        gray = "gray"
+
+    class HubMetaZone(str, Enum):
+        normal = "normal"
+        blocked = "blocked"
+        restricted = "restricted"
+        priority = "priority"
+
     class HubMeta(BaseModel):
-        pass
+        zone_type: Optional[str] = Field(default="normal")
+        color: Optional[str] = Field(default=None)
+        max_drones: int = Field(default=1, ge=0)
+        @model_validator(mode="after")
+        def hub_meta_validation(self) -> "MapParsing.HubData":
+            if not self.zone_type in [e.value for e in MapParsing.HubMetaZone]:
+                raise ValueError(f"{self.zone_type} is not a conform type of zone")
+            if not self.color in [e.value for e in MapParsing.Colors]:
+                raise ValueError(f"{self.color} is not an existing color")
+            return self
 
     class HubData(BaseModel):
         name: str = Field(min_length=1)
@@ -131,12 +150,6 @@ class MapParsing:
             if "-" in self.name or "_" in self.name or " " in self.name:
                 raise ValueError("The name must not countain: '-', '_' or ' '")
             return self
-
-    class ConnectionMeta(BaseModel):
-        pass
-
-    class ConnectionData(BaseModel):
-        pass
 
     def check_type(self, line: str) -> str:
         """Check and Return type or a raise"""
@@ -255,47 +268,88 @@ class MapParsing:
             elif not connection[1] in self.name_used:
                 raise ValueError(f"In connection {connection}: {connection[1]} does not exist")
 
-    def check_hub_meta(self, string: str) -> None:
+    def check_hub_meta(self, string: str) -> "MapParsing.HubMeta":
         """Check if hub Meta is Conform"""
-        pass
+        tuple_tempo: tuple
+        metas_str: str = self.recup_meta_only(string)
+        metas: MapParsing.HubMeta
+
+        zone_type_str: str = "normal"
+        color_str: str = None
+        max_drones_str: str = "1"
+        zone_type_check: bool = False
+        color_check: bool = False
+        max_drones_check: bool = False
+
+        if not metas_str == "[]":
+            metas_separate: tuple = metas_str.split(" ")
+
+            if len(metas_separate) > 3:
+                raise ValueError(f"{metas_separate} is not conform, it must be countain 3 metadatas maximum")
+            for e in metas_separate:
+                tuple_tempo = e.split("=")
+                if not len(tuple_tempo) == 2:
+                    raise ValueError(f"{e} is not conform metadata for hub")
+                if tuple_tempo[0] == "zone" and zone_type_check is False:
+                    zone_type_str = tuple_tempo[1]
+                    zone_type_check: bool = True
+
+                elif tuple_tempo[0] == "color" and color_check is False:
+                    color_str = tuple_tempo[1]
+                    color_check = True
+
+                elif tuple_tempo[0] == "max_drones" and max_drones_check is False:
+                    max_drones_str = tuple_tempo[1]
+                    max_drones_check = True
+
+                elif tuple_tempo[0] is not None:
+                    raise ValueError(f"{e} is not conform metadata for hub")
+        if max_drones_str is None:
+            max_drones_str = "1"
+        metas = MapParsing.HubMeta(zone_type=zone_type_str, color=color_str, max_drones=int(max_drones_str))
+
+        return metas
+
+# recup_meta_only(str)
 #           * si meta pas coeherente
 #                   => raise
+# HubMeta
+# zone_type: str = Field(default="normal")
+# color: str = Field(default=None)
+# max_drones: int = Field(default=1, ge=0)
 
     def check_hub_datas(self, string: str) -> "MapParsing.HubData":
         """Check if hub Datas are Conform"""
-        datas_str: tuple = self.recup_datas_only(string)
+        datas_str: str = self.recup_datas_only(string)
         datas: MapParsing.HubData
 
-        if not len(datas_str) == 3:
-            raise ValueError(f"{datas_str} is not conform, it must be countain 3 datas")
+        datas_separate: tuple[str, str, str] = datas_str.split(" ")
+
+        if not len(datas_separate) == 3:
+            raise ValueError(f"{datas_separate} is not conform, it must be countain 3 datas")
         datas = MapParsing.HubData(
-            name=datas_str[0],
-            coordX=int(datas_str[1]),
-            coordY=int(datas_str[2])
+            name=datas_separate[0],
+            coordX=int(datas_separate[1]),
+            coordY=int(datas_separate[2])
             )
         if datas.name in self.name_used:
             raise ValueError(f"This name: {datas.name} is already used")
-        if (datas.coordX, datas.coordX) in self.coord_list:
+        if (datas.coordX, datas.coordY) in self.coord_list:
             raise ValueError(f"Coordinates: {datas.coordX}, {datas.coordY} is already used")
 
         self.name_used.append(datas.name)
-        self.coord_list.append(datas.name)
+        self.coord_list.append((datas.coordX, datas.coordY))
 
         return datas
-# self.coord_list
-#           * Si coordonnees ne sont pas des int positifs
-#               => sinon raise
-#           * Si coordonnees deja utilisees
-#               => raise
-#           * Ajout des coordonnees dans self.coord_list
-#           * Ajout du hub dans self.hub_list
 
     def check_hub(self, line: str) -> None:
         """Check hub"""
-        # self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
         datas: MapParsing.HubData = self.check_hub_datas(line)
+        metas: MapParsing.HubMeta = self.check_hub_meta(line)
         # tester les meta
         # ajouter le tout dans self.hub_list
+        # self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
+        self.hub_list.append((datas, metas))
 
 
     def map_parsing(self) -> None:
@@ -338,6 +392,8 @@ class MapParsing:
 
             # check if every connections can existed
             self.check_connections_list()
+
+            # les donnees ne s'ajoutent pas correctement dans la map parsee
 
 
         except ValueError as e:
