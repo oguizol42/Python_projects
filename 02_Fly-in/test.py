@@ -1,9 +1,11 @@
 from fly_in import Drone_Map, Drones_Fly, Manage_flies
 from pydantic import ValidationError
 
+
 def parsing_tests() -> None:
     """Test Functions Parsing"""
     pass
+
 
 def displaying_map_settup_test(test_map: Drone_Map) -> None:
     """Test Displayong Map"""
@@ -24,6 +26,7 @@ def displaying_map_settup_test(test_map: Drone_Map) -> None:
     print(f"Hubs list:\n{test_map.hub_list}\n")
     print(f"Connections list:\n{test_map.connection_list}\n")
 
+
 def loading_test(test_file: Drone_Map) -> None:
     """Test Loading of Map File"""
     try:
@@ -32,7 +35,7 @@ def loading_test(test_file: Drone_Map) -> None:
         print(e)
     except IsADirectoryError as e:
         print(e)
-    
+
 
 def main() -> None:
     """Test every functions"""
@@ -40,27 +43,25 @@ def main() -> None:
     test_map2: Drone_Map = Drone_Map("maps/easy/01_linear_path2")
     test_map3: Drone_Map = Drone_Map("maps/easy")
 
-    # print("TESTING WITHOUT FILE LOADED:")
-    # displaying_map_settup_test(test_map)
-
+    print("TESTING WITHOUT FILE LOADED:")
+    displaying_map_settup_test(test_map)
 
     print("\nTESTING WITH GOOD MAP LOADED:")
     loading_test(test_map)
     try:
         test_map.map_parsing()
+        test_map.display_map()
     except ValueError as e:
         print(e)
     except ValidationError as e:
         print(e)
     print()
-    displaying_map_settup_test(test_map)
-    print(f"\List of connections: {test_map.connection_list}")
 
-    # print("\nTESTING BY LOADED A FILE THAT NOT EXIST:")
-    # loading_test(test_map2)
+    print("\nTESTING BY LOADED A FILE THAT NOT EXIST:")
+    loading_test(test_map2)
 
-    # print("\nTESTING BY LOADED A REPERTORY:")
-    # loading_test(test_map3)
+    print("\nTESTING BY LOADED A REPERTORY:")
+    loading_test(test_map3)
 
 
 if __name__ == "__main__":

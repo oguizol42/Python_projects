@@ -45,12 +45,19 @@ class Drone_Map(parsing.MapParsing):
     def display_map(self) -> None:
         """Display Graphical Map from File"""
         if self.map_text is None:
-            raise AttributeError("No Map Loaded")
-        print(self.map_text)
+            raise ValueError("No Map Loaded")
         if self.map_clean is None or self.map_clean == []:
-            raise AttributeError("Map is not Cleaned")
+            raise ValueError("Map is not Cleaned")
+        if self.hub_list is None or self.hub_list == []:
+            raise ValueError("Zones are not listed")
+        if self.connection_list is None or self.connection_list == []:
+            raise ValueError("Connections are not listed")
+        if self.nb_drones is None or self.nb_drones < 1:
+            raise ValueError("Quantite of drones not determined")
         print()
-        print(self.map_clean)
+        print(f"NOMBRE DE DRONES:\n{self.nb_drones}")
+        print(f"\nZONES LIST:\n{self.hub_list}")
+        print(f"\nCONNECTIONS LIST:\n{self.connection_list}")
 
 
 # Map File Loading
