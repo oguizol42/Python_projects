@@ -14,7 +14,9 @@ class MapParsing:
 
         # Definitive Datas
         self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
-        self.connection_list: list[tuple[tuple[str, str], int]] = []
+        self.connection_list: list[
+            tuple[tuple[str, str], int]
+        ] = []
         self.nb_drones: int = 0
 
     def clean_map(self) -> None:
@@ -37,6 +39,13 @@ class MapParsing:
         hub = "hub"
         connection = "connection"
 
+    class Colors(str, Enum):
+        green = "green"
+        yellow = "yellow"
+        red = "red"
+        gray = "gray"
+        blue = "blue"
+
     class HubMetaZone(str, Enum):
         normal = "normal"
         blocked = "blocked"
@@ -52,8 +61,10 @@ class MapParsing:
         def hub_meta_validation(self) -> "MapParsing.HubData":
             if self.zone_type not in [e.value for e in MapParsing.HubMetaZone]:
                 raise ValueError(
-                    f"{self.zone_type} " "is not a conform type of zone"
-                )
+                    f"{self.zone_type} "
+                    "is not a conform type of zone")
+            if self.color not in [e.value for e in MapParsing.Colors]:
+                raise ValueError(f"{self.color} is not an existing color")
             return self
 
     class HubData(BaseModel):
@@ -63,7 +74,7 @@ class MapParsing:
 
         @model_validator(mode="after")
         def hub_datas_validation(self) -> "MapParsing.HubData":
-            if "-" in self.name or " " in self.name:
+            if "-" in self.name or "_" in self.name or " " in self.name:
                 raise ValueError("The name must not countain: '-', '_' or ' '")
             return self
 
@@ -80,9 +91,9 @@ class MapParsing:
             raise ValueError(f"'{type_tuple[0]}' is used several times")
 
         if (
-            type_tuple[0] == "nb_drones"
-            or type_tuple[0] == "start_hub"
-            or type_tuple[0] == "end_hub"
+            type_tuple[0] == "nb_drones" or
+            type_tuple[0] == "start_hub" or
+            type_tuple[0] == "end_hub"
         ):
             self.types_used.append(type_tuple[0])
 
@@ -142,14 +153,15 @@ class MapParsing:
             raise ValueError(f"{meta} don't have good quantites of datas")
         elif not tuple_tempo[0] == "max_link_capacity":
             raise ValueError(
-                f"{tuple_tempo[0]} " "if not a conform metadata for connection"
-            )
+                f"{tuple_tempo[0]} "
+                "if not a conform metadata for connection"
+                )
         number = int(tuple_tempo[1])
         if number < 1:
             raise ValueError(
                 f"Connection {tuple_tempo[0]} "
                 "cant't be have {number} of capacity"
-            )
+                )
         return number
 
     def check_connection_datas(self, line: str) -> None:
@@ -180,20 +192,20 @@ class MapParsing:
         """Check if Each Connection Exist"""
         for connection in self.connection_check_list:
             if (
-                not connection[0] in self.name_used
-                and not connection[1] in self.name_used
+                not connection[0] in self.name_used and
+                not connection[1] in self.name_used
             ):
                 raise ValueError(f"Connection {connection} does not exist")
             elif not connection[0] in self.name_used:
                 raise ValueError(
                     f"In connection {connection}: "
                     f"{connection[0]} does not exist"
-                )
+                    )
             elif not connection[1] in self.name_used:
                 raise ValueError(
                     f"In connection {connection}: "
                     f"{connection[1]} does not exist"
-                )
+                    )
 
     def check_hub_meta(self, string: str) -> "MapParsing.HubMeta":
         """Check if hub Meta is Conform"""
@@ -215,7 +227,7 @@ class MapParsing:
                 raise ValueError(
                     f"{metas_separate} is not conform, "
                     "it must be countain 3 metadatas maximum"
-                )
+                    )
             for e in metas_separate:
                 tuple_tempo = e.split("=")
                 if not len(tuple_tempo) == 2:
@@ -229,8 +241,8 @@ class MapParsing:
                     color_check = True
 
                 elif (
-                    tuple_tempo[0] == "max_drones"
-                    and max_drones_check is False
+                    tuple_tempo[0] == "max_drones" and
+                    max_drones_check is False
                 ):
                     max_drones_str = tuple_tempo[1]
                     max_drones_check = True
@@ -242,8 +254,8 @@ class MapParsing:
         metas = MapParsing.HubMeta(
             zone_type=zone_type_str,
             color=color_str,
-            max_drones=int(max_drones_str),
-        )
+            max_drones=int(max_drones_str)
+            )
 
         return metas
 
@@ -258,19 +270,19 @@ class MapParsing:
             raise ValueError(
                 f"{datas_separate} is not conform"
                 ", it must be countain 3 datas"
-            )
+                )
         datas = MapParsing.HubData(
             name=datas_separate[0],
             coordX=int(datas_separate[1]),
-            coordY=int(datas_separate[2]),
-        )
+            coordY=int(datas_separate[2])
+            )
         if datas.name in self.name_used:
             raise ValueError(f"This name: {datas.name} is already used")
         if (datas.coordX, datas.coordY) in self.coord_list:
             raise ValueError(
                 f"Coordinates: {datas.coordX}, "
                 f"{datas.coordY} is already used"
-            )
+                )
 
         self.name_used.append(datas.name)
         self.coord_list.append((datas.coordX, datas.coordY))
@@ -288,32 +300,36 @@ class MapParsing:
         tuple_tempo: tuple
         type: str = None
 
-        self.clean_map()
-        for i in range(len(self.map_clean)):
-            type = self.check_type(self.map_clean[i])
+        try:
+            self.clean_map()
+            for i in range(len(self.map_clean)):
+                type = self.check_type(self.map_clean[i])
 
-            if i == 0:
-                # CHeck first line
-                if not type == "nb_drones":
-                    raise ValueError(
-                        f"The first type is '{type}' "
-                        "but it should have been 'nb_drones'"
-                    )
-                tuple_tempo = tuple(self.map_clean[i].split(" "))
-                if not len(tuple_tempo) == 2:
-                    raise ValueError(f"Definition of {type} is not valid")
-                self.nb_drones = int(tuple_tempo[1])
-                if self.nb_drones < 1:
-                    raise ValueError(
-                        f"{self.nb_drones} is not "
-                        "a valid quantite of drones"
-                    )
+                if i == 0:
+                    # CHeck first line
+                    if not type == "nb_drones":
+                        raise ValueError(
+                            f"The first type is '{type}' "
+                            "but it should have been 'nb_drones'"
+                            )
+                    tuple_tempo = tuple(self.map_clean[i].split(" "))
+                    if not len(tuple_tempo) == 2:
+                        raise ValueError(f"Definition of {type} is not valid")
+                    self.nb_drones = int(tuple_tempo[1])
+                    if self.nb_drones < 1:
+                        raise ValueError(
+                            f"{self.nb_drones} is not "
+                            "a valid quantite of drones"
+                            )
 
-                continue
+                    continue
 
-            if type == "connection":
-                self.check_connection_datas(self.map_clean[i])
-            else:
-                self.check_hub(self.map_clean[i])
+                if type == "connection":
+                    self.check_connection_datas(self.map_clean[i])
+                else:
+                    self.check_hub(self.map_clean[i])
 
-        self.check_connections_list()
+            self.check_connections_list()
+
+        except ValueError as e:
+            print(e)
