@@ -38,9 +38,9 @@ class Drone_Map(parsing.MapParsing):
 
     def loading_map(self) -> None:
         """Loading Map from File"""
-        fd: int = open(self.file_name, "r")
-        self.map_text: str = fd.read()
-        fd.close()
+        fd: int
+        with open(self.file_name, "r") as fd:
+            self.map_text: str = fd.read()
 
     def display_map(self) -> None:
         """Display Graphical Map from File"""

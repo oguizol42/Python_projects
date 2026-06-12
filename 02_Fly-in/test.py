@@ -52,9 +52,9 @@ def main() -> None:
         test_map.map_parsing()
         test_map.display_map()
     except ValueError as e:
-        print(e)
+        print(f"line {test_map.num_line_error}: {e}")
     except ValidationError as e:
-        print(e)
+        print(f"line {test_map.num_line_error}: {e}")
     print()
 
     print("\nTESTING BY LOADED A FILE THAT NOT EXIST:")

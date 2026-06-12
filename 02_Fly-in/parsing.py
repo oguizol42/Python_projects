@@ -9,8 +9,9 @@ class MapParsing:
         self.map_clean: list[str] = []
         self.types_used: list[str] = []
         self.name_used: list[str] = []
-        self.coord_list: list[tuple[int, int]] = []
         self.connection_check_list: list[tuple[str, str]] = []
+        self.num_line_list: list[int] = []
+        self.num_line_error: int = 0
 
         # Definitive Datas
         self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
@@ -19,13 +20,17 @@ class MapParsing:
 
     def clean_map(self) -> None:
         """Clean Map Datas"""
+        num_line: int = 0
+
         if self.map_text is None or self.map_text == []:
             raise ValueError("No datas read")
         map_list: list[str] = self.map_text.split("\n")
         for one_line in map_list:
+            num_line += 1
             tuple_tempo = one_line.split("#")
             if len(tuple_tempo[0]) > 1:
                 self.map_clean.append(tuple_tempo[0])
+                self.num_line_list.append(num_line)
         if len(self.map_clean) < 6:
             self.map_clean = []
             raise ValueError("Not enough values in the map definition")
@@ -266,14 +271,8 @@ class MapParsing:
         )
         if datas.name in self.name_used:
             raise ValueError(f"This name: {datas.name} is already used")
-        if (datas.coordX, datas.coordY) in self.coord_list:
-            raise ValueError(
-                f"Coordinates: {datas.coordX}, "
-                f"{datas.coordY} is already used"
-            )
 
         self.name_used.append(datas.name)
-        self.coord_list.append((datas.coordX, datas.coordY))
 
         return datas
 
@@ -290,6 +289,7 @@ class MapParsing:
 
         self.clean_map()
         for i in range(len(self.map_clean)):
+            self.num_line_error = self.num_line_list[i]
             type = self.check_type(self.map_clean[i])
 
             if i == 0:
