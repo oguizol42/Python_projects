@@ -51,7 +51,7 @@ class MapParsing:
     class HubMeta(BaseModel):
         zone_type: Optional[str] = Field(default="normal")
         color: Optional[str] = Field(default=None)
-        max_drones: int = Field(default=1, ge=0)
+        max_drones: int = Field(default=1, gt=0)
 
         @model_validator(mode="after")
         def hub_meta_validation(self) -> "MapParsing.HubData":
@@ -63,13 +63,13 @@ class MapParsing:
 
     class HubData(BaseModel):
         name: str = Field(min_length=1)
-        coordX: int = Field(ge=0)
-        coordY: int = Field(ge=0)
+        coordX: int
+        coordY: int
 
         @model_validator(mode="after")
         def hub_datas_validation(self) -> "MapParsing.HubData":
             if "-" in self.name or " " in self.name:
-                raise ValueError("The name must not countain: '-', '_' or ' '")
+                raise ValueError("The name must not countain: '-', or ' '")
             return self
 
     def check_type(self, line: str) -> str:
@@ -185,8 +185,8 @@ class MapParsing:
         """Check if Each Connection Exist"""
         for connection in self.connection_check_list:
             if (
-                not connection[0] in self.name_used
-                and not connection[1] in self.name_used
+                connection[0] not in self.name_used
+                and connection[1] not in self.name_used
             ):
                 raise ValueError(f"Connection {connection} does not exist")
             elif not connection[0] in self.name_used:
@@ -317,3 +317,7 @@ class MapParsing:
                 self.check_hub(self.map_clean[i])
 
         self.check_connections_list()
+        if "start_hub" not in self.types_used:
+            raise ValueError("No start_hub defined")
+        if "end_hub" not in self.types_used:
+            raise ValueError("No end_hub defined")
