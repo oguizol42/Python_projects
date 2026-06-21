@@ -1,4 +1,5 @@
 from fly_in import Drone_Map
+from parsing import MapParsing
 from typing import Optional
 
 class Map:
@@ -6,12 +7,15 @@ class Map:
         self.map_parsed: Drone_Map = map_parsed
         self.size_map: tuple[int, int]
         self.current_turn: int = 0
-        self.zones_list: list[Map.Zone] = []
+        self.start_hub: Map.Zone
+        self.end_hub: Map.Zone
+        self.zones_list: dict[str, Map.Zone] = {}
         self.connections_list: list[Map.Connection] = []
         self.drones_list: list[Map.Drone] = []
 
     class Zone:
         def __init__(self) -> None:
+            self.name: str
             self.coord_x: int
             self.coord_y: int
             self.color: Optional[str] = None
@@ -19,6 +23,50 @@ class Map:
             self.max_drones_allow: int = 1
             self.drones_in_zone: list[Map.Drone] = []
             self.connections: list[Map.Connection] = []
+
+    def calcul_size_map(self, coord_x: int, coord_y: int):
+        """Calcul Size of the Map"""
+        if coord_x < self.min_x:
+                self.min_x = coord_x
+        elif coord_x > self.max_x:
+            self.max_x = coord_x
+        if coord_y < self.min_y:
+            self.min_y = coord_y
+        elif coord_y > self.max_y:
+            self.max_y = coord_y
+
+        self.size_map = (
+            self.max_x - self.min_x,
+            self.max_y - self.min_y
+        )
+
+    def recup_zone(self, zone_parsed) -> "Map.Zone":
+        """Recup One Zone from Map Parsed and Calcul Map Size"""
+        self.max_x: int = 0
+        self.max_y: int = 0
+        self.min_x: int = 0
+        self.min_y: int = 0
+
+        zone = Map.Zone()
+        zone.name = zone_parsed[0].name
+        zone.x = zone_parsed[0].coord_x
+        zone.y = zone_parsed[0].coord_y
+        zone.color = zone_parsed[1].color
+        zone.priority = zone_parsed[1].zone_type
+        zone.max_drones_allow = zone_parsed[1].max_drones
+
+        self.calcul_size_map(zone.x, zone.y)
+
+        return zone
+
+
+    def recup_zones_list(self) -> None:
+        """Recup Eevry Zones from Map Parsed and Calcul Map Size"""
+        for zone_parsed in self.map_parsed.hub_list:
+            (self.zones_list)[zone_parsed[0].name] = self.recup_zone(zone_parsed)
+
+        self.start_hub = self.recup_zone(self.map_parsed.start_hub)
+        self.end_hub = self.recup_zone(self.map_parsed.end_hub)
 
     class Connection:
         def __init__(self) -> None:

@@ -14,8 +14,6 @@ class MapParsing:
         self.num_line_error: int = 0
 
         # Definitive Datas
-        self.start_hub: tuple[MapParsing.HubData, MapParsing.HubMeta]
-        self.end_hub: tuple[MapParsing.HubData, MapParsing.HubMeta]
         self.hub_list: list[tuple[MapParsing.HubData, MapParsing.HubMeta]] = []
         self.connection_list: list[tuple[tuple[str, str], int]] = []
         self.nb_drones: int = 0
@@ -65,6 +63,8 @@ class MapParsing:
 
     class HubData(BaseModel):
         name: str = Field(min_length=1)
+        # coordX: int
+        # coordY: int
         coord_x: int
         coord_y: int
 
@@ -278,16 +278,11 @@ class MapParsing:
 
         return datas
 
-    def check_hub(self, line: str, type: str) -> None:
+    def check_hub(self, line: str) -> None:
         """Check hub"""
         datas: MapParsing.HubData = self.check_hub_datas(line)
         metas: MapParsing.HubMeta = self.check_hub_meta(line)
-        if type == "hub":
-            self.hub_list.append((datas, metas))
-        elif type == "start_hub":
-            self.start_hub = (datas, metas)
-        elif type == "end_hub":
-            self.end_hub = (datas, metas)
+        self.hub_list.append((datas, metas))
 
     def map_parsing(self) -> None:
         """Parsing of All the Map"""
@@ -321,7 +316,7 @@ class MapParsing:
             if type == "connection":
                 self.check_connection_datas(self.map_clean[i])
             else:
-                self.check_hub(self.map_clean[i], type)
+                self.check_hub(self.map_clean[i])
 
         self.check_connections_list()
         if "start_hub" not in self.types_used:
